@@ -4,12 +4,15 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"strings"
 
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/pbkdf2"
 )
 
 func DeriveMasterKey(email, password string, keyType KDFType, config *KDFConfig) ([]byte, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
+
 	switch keyType {
 	case KDFTypeSHA256:
 		return deriveSha256(email, password, config.Iterations), nil
