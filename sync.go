@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
@@ -30,7 +29,5 @@ func (receiver *vault) Sync(ctx context.Context, session *result.Session) (*resu
 		return nil, fmt.Errorf("failed syncing vault: %w", err)
 	}
 
-	log.Println(syncData)
-
-	return nil, nil
+	return syncData, nil
 }

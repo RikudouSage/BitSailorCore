@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"go.chrastecky.dev/bitwarden-client/bitwarden/internal"
 	internalHttp "go.chrastecky.dev/bitwarden-client/bitwarden/internal/http"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
 )
@@ -45,6 +46,8 @@ func request[TResponse any](
 		return out, fmt.Errorf("failed creating request: %w", err)
 	}
 	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Bitwarden-Client-Version", internal.BitwardenVersion)
+	req.Header.Set("Bitwarden-Client-Name", internal.DeviceName)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
