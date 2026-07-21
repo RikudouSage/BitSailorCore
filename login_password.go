@@ -20,10 +20,10 @@ import (
 var ErrTwoFactorRequired = fmt.Errorf("two factor authentication required")
 
 func (receiver *auth) preLogin(ctx context.Context, email string) (*preLoginResponse, error) {
-	uri := new(*receiver.baseURL)
+	uri := new(*receiver.identityURL)
 	uri.Path = fmt.Sprintf("/identity/accounts/prelogin")
 
-	resp, err := request[*preLoginResponse](ctx, receiver.httpClient, http.MethodPost, uri, &preLoginRequest{Email: email})
+	resp, err := request[*preLoginResponse](ctx, receiver.httpClient, http.MethodPost, uri, &preLoginRequest{Email: email}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prelogin: %w", err)
 	}

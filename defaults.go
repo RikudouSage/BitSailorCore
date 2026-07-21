@@ -13,8 +13,11 @@ func (receiver *client) provideDefaultsAndValidate() error {
 	if receiver.httpClient == nil {
 		receiver.httpClient = http.DefaultClient
 	}
-	if receiver.baseURL == nil {
-		receiver.baseURL = lo.Must(url.Parse("https://vault.bitwarden.com"))
+	if receiver.identityURL == nil {
+		receiver.identityURL = lo.Must(url.Parse("https://vault.bitwarden.com"))
+	}
+	if receiver.apiURL == nil {
+		receiver.apiURL = lo.Must(url.Parse("https://api.bitwarden.com"))
 	}
 
 	if receiver.deviceID == uuid.Nil {

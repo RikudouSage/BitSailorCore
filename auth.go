@@ -17,28 +17,28 @@ type Auth interface {
 }
 
 type auth struct {
-	baseURL    *url.URL
-	httpClient *http.Client
-	deviceID   uuid.UUID
+	identityURL *url.URL
+	httpClient  *http.Client
+	deviceID    uuid.UUID
 
 	now func() time.Time
 }
 
 func newAuth(
-	baseURL *url.URL,
+	identityURL *url.URL,
 	httpClient *http.Client,
 	deviceID uuid.UUID,
 ) *auth {
 	return &auth{
-		baseURL:    baseURL,
-		httpClient: httpClient,
-		deviceID:   deviceID,
-		now:        time.Now,
+		identityURL: identityURL,
+		httpClient:  httpClient,
+		deviceID:    deviceID,
+		now:         time.Now,
 	}
 }
 
 func (receiver *auth) getTokenURL() *url.URL {
-	tokenURL := new(*receiver.baseURL)
+	tokenURL := new(*receiver.identityURL)
 	tokenURL.Path = "/identity/connect/token"
 
 	return tokenURL

@@ -14,9 +14,10 @@ type Client interface {
 }
 
 type client struct {
-	httpClient *http.Client
-	baseURL    *url.URL
-	deviceID   uuid.UUID
+	httpClient  *http.Client
+	identityURL *url.URL
+	apiURL      *url.URL
+	deviceID    uuid.UUID
 
 	auth  *auth
 	vault *vault
@@ -40,7 +41,7 @@ func NewClient(options ...Option) (Client, error) {
 
 func (receiver *client) Auth() Auth {
 	if receiver.auth == nil {
-		receiver.auth = newAuth(receiver.baseURL, receiver.httpClient, receiver.deviceID)
+		receiver.auth = newAuth(receiver.identityURL, receiver.httpClient, receiver.deviceID)
 	}
 
 	return receiver.auth
@@ -48,7 +49,7 @@ func (receiver *client) Auth() Auth {
 
 func (receiver *client) Vault() Vault {
 	if receiver.vault == nil {
-		receiver.vault = newVault()
+		receiver.vault = newVault(receiver.apiURL, receiver.httpClient)
 	}
 
 	return receiver.vault
