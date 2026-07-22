@@ -1,7 +1,7 @@
 package main
 
 /*
-#include <bw_common.h>
+#include "bw_common.h"
 */
 import "C"
 import "go.chrastecky.dev/bitwarden-client/bitwarden"

@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <bw_common.h>
+#include "bw_common.h"
 
 typedef enum {
     BitwardenItemTypeLogin = 1,

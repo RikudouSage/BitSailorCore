@@ -1,7 +1,7 @@
 package main
 
 /*
-#include <bw_item.h>
+#include "bw_item.h"
 #include <stdlib.h>
 */
 import "C"

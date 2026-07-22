@@ -1,7 +1,7 @@
 package main
 
 /*
-#include <bw_errors.h>
+#include "bw_errors.h"
 */
 import "C"
 import (
