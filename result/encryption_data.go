@@ -1,6 +1,10 @@
 package result
 
-import "go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
+import (
+	"github.com/google/uuid"
+	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
+	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
+)
 
 type AccountKeys struct {
 	PublicKey         *string
@@ -8,7 +12,8 @@ type AccountKeys struct {
 }
 
 type EncryptionData struct {
-	UserKey []byte
+	UserKey          dto.Key
+	OrganizationKeys map[uuid.UUID]dto.Key
 
 	EncryptedUserKey    *string
 	EncryptedPrivateKey *string

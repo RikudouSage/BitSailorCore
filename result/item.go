@@ -20,24 +20,46 @@ const (
 	ItemTypePassport
 )
 
+type URIMatchType int
+
+const (
+	URIMatchTypeDomain URIMatchType = iota
+	URIMatchTypeHost
+	URIMatchTypeStartsWith
+	URIMatchTypeExact
+	URIMatchTypeRegularExpression
+	URIMatchTypeNever
+)
+
+type FieldType int
+
+const (
+	FieldTypeText FieldType = iota
+	FieldTypeHidden
+	FieldTypeCheckbox
+	FieldTypeLinkedID
+)
+
 type ItemPermissions struct {
 	Delete  bool `json:"delete"`
 	Restore bool `json:"restore"`
 }
 
+type ItemLoginURI struct {
+	URI         string       `json:"uri"`
+	URIChecksum string       `json:"uriChecksum"`
+	Match       URIMatchType `json:"match"` // todo
+}
+
 type ItemLogin struct {
-	URI  string `json:"uri"`
-	URIs []struct {
-		URI         string `json:"uri"`
-		URIChecksum string `json:"uriChecksum"`
-		Match       any    `json:"match"` // todo
-	} `json:"uris"`
-	Username             string    `json:"username"`
-	Password             string    `json:"password"`
-	PasswordRevisionDate time.Time `json:"passwordRevisionDate"`
-	TOTP                 *string   `json:"totp"`
-	AutofillOnPageLoad   any       `json:"autofillOnPageLoad"` // todo
-	Fido2Credentials     any       `json:"fido2Credentials"`   // todo
+	URI                  string          `json:"uri"`
+	URIs                 []*ItemLoginURI `json:"uris"`
+	Username             *string         `json:"username"`
+	Password             *string         `json:"password"`
+	PasswordRevisionDate *time.Time      `json:"passwordRevisionDate"`
+	TOTP                 *string         `json:"totp"`
+	AutofillOnPageLoad   any             `json:"autofillOnPageLoad"` // todo
+	Fido2Credentials     any             `json:"fido2Credentials"`   // todo
 }
 
 type ItemCard struct {
@@ -82,6 +104,17 @@ type ItemSSHKey struct {
 	KeyFingerprint string `json:"keyFingerprint"`
 }
 
+type Field struct {
+	Type     FieldType `json:"type"`
+	Name     string    `json:"name"`
+	Value    *string   `json:"value"`
+	LinkedID *int      `json:"linkedId"`
+}
+
+func (receiver Field) CheckboxValue() bool {
+	return receiver.Type == FieldTypeCheckbox && receiver.Value != nil && *receiver.Value == "true"
+}
+
 type Item struct {
 	ID                  uuid.UUID        `json:"id"`
 	Type                ItemType         `json:"type"`
@@ -91,7 +124,7 @@ type Item struct {
 	DeletedDate         *time.Time       `json:"deletedDate"`
 	Favorite            bool             `json:"favorite"`
 	OrganizationID      uuid.UUID        `json:"organizationId"`
-	Key                 string           `json:"key"`
+	Key                 *string          `json:"key"`
 	Permissions         *ItemPermissions `json:"permissions"`
 	Edit                bool             `json:"edit"`
 	CollectionIDs       []uuid.UUID      `json:"collectionIds"`
@@ -101,6 +134,7 @@ type Item struct {
 	Name                string           `json:"name"`
 	CreationDate        time.Time        `json:"creationDate"`
 	Reprompt            types.NumBool    `json:"reprompt"`
+	Fields              []*Field         `json:"fields"`
 
 	Login      *ItemLogin      `json:"login"`
 	Card       *ItemCard       `json:"card"`
