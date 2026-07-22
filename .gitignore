@@ -1,2 +1,4 @@
 /.idea
 *.iml
+/libbw.h
+/libbw.so

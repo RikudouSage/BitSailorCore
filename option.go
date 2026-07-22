@@ -17,6 +17,18 @@ func WithBaseURL(baseURL string) Option {
 			return fmt.Errorf("failed parsing base url: %w", err)
 		}
 		bwClient.identityURL = parsed
+		bwClient.apiURL = parsed
+		return nil
+	}
+}
+
+func WithIdentityURL(identityURL string) Option {
+	return func(bwClient *client) error {
+		parsed, err := url.Parse(identityURL)
+		if err != nil {
+			return fmt.Errorf("failed parsing identity url: %w", err)
+		}
+		bwClient.identityURL = parsed
 		return nil
 	}
 }
