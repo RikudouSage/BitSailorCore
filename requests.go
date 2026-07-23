@@ -33,3 +33,9 @@ type apiKeyLoginRequest struct {
 	DeviceIdentifier string `url:"deviceIdentifier"`
 	DeviceName       string `url:"deviceName"`
 }
+
+type refreshLoginRequest struct {
+	GrantType    string `url:"grant_type"`
+	ClientID     string `url:"client_id"`
+	ClientSecret string `url:"client_secret"`
+}

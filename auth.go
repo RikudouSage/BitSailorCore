@@ -13,6 +13,7 @@ import (
 type Auth interface {
 	LoginPassword(ctx context.Context, email, password string) (*result.Session, error)
 	LoginApiKey(ctx context.Context, clientID, clientSecret string) (*result.Session, error)
+	RefreshToken(ctx context.Context, session *result.Session) error
 	UnlockSession(ctx context.Context, session *result.Session, email, password string) error
 }
 
