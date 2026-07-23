@@ -11,6 +11,8 @@ import (
 type Client interface {
 	Auth() Auth
 	Vault() Vault
+
+	GeneratePassword(request *PasswordGeneratorRequest) (string, error)
 }
 
 type client struct {

@@ -94,8 +94,7 @@ func goBoolFromCPtr(value *C.bool) *bool {
 		return nil
 	}
 
-	out := bool(*value)
-	return &out
+	return new(bool(*value))
 }
 
 func goIntFromCPtr(value *C.int) *int {
