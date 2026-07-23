@@ -15,6 +15,10 @@ import (
 )
 
 func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, item *result.Item) error {
+	if receiver.vaultData == nil {
+		return ErrMissingVault
+	}
+
 	if item.OrganizationID != uuid.Nil {
 		return errors.New("creating items inside organizations is not supported yet")
 	}
