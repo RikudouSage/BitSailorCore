@@ -115,7 +115,7 @@ func TestFileLenFinishesEncryption(t *testing.T) {
 	if _, err = io.Copy(&encrypted, file); err != nil {
 		t.Fatal(err)
 	}
-	if uint64(encrypted.Len()) != file.Len() {
+	if encrypted.Len() != file.Len() {
 		t.Fatalf("expected read length %d, got %d", file.Len(), encrypted.Len())
 	}
 }
