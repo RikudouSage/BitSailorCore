@@ -12,7 +12,7 @@ import (
 )
 
 //export BitwardenImportVault
-func BitwardenImportVault(inVault C.VaultHandle, exportData *C.char, outVault *C.VaultHandle) C.Result {
+func BitwardenImportVault(inVault C.VaultHandle, exportData *C.char, outVault *C.VaultHandle) C.BitwardenResult {
 	if outVault == nil {
 		setLastError(nullPointerError("outVault"))
 		return BitwardenError

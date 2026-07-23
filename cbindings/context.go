@@ -20,7 +20,7 @@ func (receiver *contextHandle) Close() error {
 }
 
 //export BitwardenNewContext
-func BitwardenNewContext(outContext *C.ContextHandle) C.Result {
+func BitwardenNewContext(outContext *C.ContextHandle) C.BitwardenResult {
 	if outContext == nil {
 		setLastError(nullPointerError("outContext"))
 		return BitwardenError
@@ -37,7 +37,7 @@ func BitwardenNewContext(outContext *C.ContextHandle) C.Result {
 }
 
 //export BitwardenNewTimeoutContext
-func BitwardenNewTimeoutContext(outContext *C.ContextHandle, timeoutMS C.int64_t) C.Result {
+func BitwardenNewTimeoutContext(outContext *C.ContextHandle, timeoutMS C.int64_t) C.BitwardenResult {
 	if outContext == nil {
 		setLastError(nullPointerError("outContext"))
 		return BitwardenError
@@ -54,7 +54,7 @@ func BitwardenNewTimeoutContext(outContext *C.ContextHandle, timeoutMS C.int64_t
 }
 
 //export BitwardenCancelContext
-func BitwardenCancelContext(handleRef C.ContextHandle) C.Result {
+func BitwardenCancelContext(handleRef C.ContextHandle) C.BitwardenResult {
 	ctxHandle, err := getHandleObj[*contextHandle](handle(handleRef))
 	if err != nil {
 		setLastError(err)

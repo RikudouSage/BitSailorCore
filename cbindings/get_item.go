@@ -19,7 +19,7 @@ func BitwardenGetItem(
 	session C.SessionHandle,
 	itemID C.UUID,
 	outItem *C.BitwardenItem,
-) C.Result {
+) C.BitwardenResult {
 	if outItem == nil {
 		setLastError(nullPointerError("outItem"))
 		return BitwardenError

@@ -11,7 +11,7 @@ import (
 )
 
 //export BitwardenExportEncryptedVault
-func BitwardenExportEncryptedVault(vault C.VaultHandle, jsonOut **C.char) C.Result {
+func BitwardenExportEncryptedVault(vault C.VaultHandle, jsonOut **C.char) C.BitwardenResult {
 	if jsonOut == nil {
 		setLastError(nullPointerError("jsonOut"))
 		return BitwardenError

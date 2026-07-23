@@ -6,7 +6,7 @@ package main
 import "C"
 
 //export BitwardenCloseHandle
-func BitwardenCloseHandle(handleID C.Handle) C.Result {
+func BitwardenCloseHandle(handleID C.Handle) C.BitwardenResult {
 	err := unregisterHandle(handle(handleID))
 	if err != nil {
 		setLastError(err)

@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef int Result;
+typedef int BitwardenResult;
 typedef uint64_t Handle;
 typedef Handle ContextHandle;
 typedef Handle ClientHandle;

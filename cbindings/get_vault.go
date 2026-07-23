@@ -7,7 +7,7 @@ import "C"
 import "go.chrastecky.dev/bitwarden-client/bitwarden"
 
 //export BitwardenGetVault
-func BitwardenGetVault(client C.ClientHandle, out *C.VaultHandle) C.Result {
+func BitwardenGetVault(client C.ClientHandle, out *C.VaultHandle) C.BitwardenResult {
 	if out == nil {
 		setLastError(nullPointerError("out"))
 		return BitwardenError

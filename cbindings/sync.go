@@ -15,7 +15,7 @@ func BitwardenSyncVault(
 	ctx C.ContextHandle,
 	session C.SessionHandle,
 	outHandle *C.VaultHandle,
-) C.Result {
+) C.BitwardenResult {
 	if outHandle == nil {
 		setLastError(nullPointerError("outHandle"))
 		return BitwardenError

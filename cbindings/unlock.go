@@ -15,7 +15,7 @@ func BitwardenUnlockSession(
 	ctx C.ContextHandle,
 	session C.SessionHandle,
 	email, password *C.char,
-) C.Result {
+) C.BitwardenResult {
 	clientGo, err := getHandleObj[bitwarden.Client](handle(client))
 	if err != nil {
 		setLastError(err)

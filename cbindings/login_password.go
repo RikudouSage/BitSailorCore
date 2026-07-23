@@ -12,7 +12,7 @@ func BitwardenLoginPassword(
 	ctx C.ContextHandle,
 	email, password *C.char,
 	outHandle *C.SessionHandle,
-) C.Result {
+) C.BitwardenResult {
 	if outHandle == nil {
 		setLastError(nullPointerError("outHandle"))
 		return BitwardenError

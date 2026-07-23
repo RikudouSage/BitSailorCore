@@ -19,7 +19,7 @@ import (
 )
 
 //export BitwardenNewClient
-func BitwardenNewClient(outHandle *C.ClientHandle, options C.NewClientOptions) C.Result {
+func BitwardenNewClient(outHandle *C.ClientHandle, options C.NewClientOptions) C.BitwardenResult {
 	if outHandle == nil {
 		setLastError(nullPointerError("outHandle"))
 		return BitwardenError

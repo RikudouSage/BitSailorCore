@@ -7,7 +7,7 @@ import "C"
 
 const (
 	// BitwardenSuccess indicates that a C API call completed successfully.
-	BitwardenSuccess C.Result = iota
+	BitwardenSuccess C.BitwardenResult = iota
 	// BitwardenError indicates that a C API call failed and last error is available.
 	BitwardenError
 )
