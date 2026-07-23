@@ -18,6 +18,7 @@ type Vault interface {
 	GetItem(ctx context.Context, session *result.Session, itemID uuid.UUID) (*result.Item, error)
 	GetItems(ctx context.Context, session *result.Session) ([]*result.Item, error)
 	CreateItem(ctx context.Context, session *result.Session, item *result.Item) error
+	DeleteItem(ctx context.Context, session *result.Session, itemID uuid.UUID) error
 
 	GetVaultData() *result.VaultData
 	WithVaultData(vaultData *result.VaultData) Vault

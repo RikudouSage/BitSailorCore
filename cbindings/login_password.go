@@ -4,7 +4,6 @@ package main
 #include "bw_common.h"
 */
 import "C"
-import "go.chrastecky.dev/bitwarden-client/bitwarden"
 
 //export BitwardenLoginPassword
 func BitwardenLoginPassword(
@@ -18,12 +17,7 @@ func BitwardenLoginPassword(
 		return BitwardenError
 	}
 
-	clientGo, err := getHandleObj[bitwarden.Client](handle(client))
-	if err != nil {
-		setLastError(err)
-		return BitwardenError
-	}
-	ctxGo, err := getHandleObj[*contextHandle](handle(ctx))
+	clientGo, ctxGo, err := getCommonAuthHandles(client, ctx)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError
@@ -32,7 +26,7 @@ func BitwardenLoginPassword(
 	emailStr := C.GoString(email)
 	passwordStr := C.GoString(password)
 
-	session, err := clientGo.Auth().LoginPassword(ctxGo.ctx, emailStr, passwordStr)
+	session, err := clientGo.Auth().LoginPassword(ctxGo, emailStr, passwordStr)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError

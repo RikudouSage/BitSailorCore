@@ -10,7 +10,6 @@ import (
 	"unsafe"
 
 	"github.com/google/uuid"
-	"go.chrastecky.dev/bitwarden-client/bitwarden"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/types"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
 )
@@ -27,25 +26,14 @@ func BitwardenCreateItem(
 		setLastError(nullPointerError("item"))
 		return BitwardenError
 	}
-
-	vaultGo, err := getHandleObj[bitwarden.Vault](handle(vault))
-	if err != nil {
-		setLastError(err)
-		return BitwardenError
-	}
-	ctxGo, err := getHandleObj[*contextHandle](handle(ctx))
-	if err != nil {
-		setLastError(err)
-		return BitwardenError
-	}
-	sessionGo, err := getHandleObj[*result.Session](handle(session))
+	vaultGo, ctxGo, sessionGo, err := getCommonVaultHandles(vault, ctx, session)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError
 	}
 
 	itemGo := bitwardenItemFromC(item)
-	err = vaultGo.CreateItem(ctxGo.ctx, sessionGo, itemGo)
+	err = vaultGo.CreateItem(ctxGo, sessionGo, itemGo)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError

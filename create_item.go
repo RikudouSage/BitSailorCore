@@ -27,11 +27,16 @@ func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, 
 
 	targetUri := new(*receiver.baseURL)
 	targetUri.Path = "/ciphers"
-	newItem, err := request[result.Item](ctx, receiver.httpClient, http.MethodPost, targetUri, resultItem, session)
+	newItemEnc, err := request[*result.Item](ctx, receiver.httpClient, http.MethodPost, targetUri, resultItem, session)
 	if err != nil {
 		return fmt.Errorf("failed creating the item: %w", err)
 	}
-	*item = newItem
+	newItemDec, err := receiver.DecryptItem(ctx, session, newItemEnc)
+	if err != nil {
+		return fmt.Errorf("failed decrypting the item: %w", err)
+	}
+	*item = *newItemDec
+	receiver.vaultData.Items = append(receiver.vaultData.Items, newItemEnc)
 
 	return nil
 }

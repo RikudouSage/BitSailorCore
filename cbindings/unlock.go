@@ -5,7 +5,6 @@ package main
 */
 import "C"
 import (
-	"go.chrastecky.dev/bitwarden-client/bitwarden"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
 )
 
@@ -16,12 +15,7 @@ func BitwardenUnlockSession(
 	session C.SessionHandle,
 	email, password *C.char,
 ) C.BitwardenResult {
-	clientGo, err := getHandleObj[bitwarden.Client](handle(client))
-	if err != nil {
-		setLastError(err)
-		return BitwardenError
-	}
-	ctxGo, err := getHandleObj[*contextHandle](handle(ctx))
+	clientGo, ctxGo, err := getCommonAuthHandles(client, ctx)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError
@@ -34,7 +28,7 @@ func BitwardenUnlockSession(
 	emailGo := C.GoString(email)
 	passwordGo := C.GoString(password)
 
-	err = clientGo.Auth().UnlockSession(ctxGo.ctx, sessionGo, emailGo, passwordGo)
+	err = clientGo.Auth().UnlockSession(ctxGo, sessionGo, emailGo, passwordGo)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError

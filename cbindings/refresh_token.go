@@ -5,18 +5,12 @@ package main
 */
 import "C"
 import (
-	"go.chrastecky.dev/bitwarden-client/bitwarden"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
 )
 
 //export BitwardenRefreshToken
 func BitwardenRefreshToken(client C.ClientHandle, ctx C.ContextHandle, session C.SessionHandle) C.BitwardenResult {
-	clientGo, err := getHandleObj[bitwarden.Client](handle(client))
-	if err != nil {
-		setLastError(err)
-		return BitwardenError
-	}
-	ctxGo, err := getHandleObj[*contextHandle](handle(client))
+	clientGo, ctxGo, err := getCommonAuthHandles(client, ctx)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError
@@ -27,7 +21,7 @@ func BitwardenRefreshToken(client C.ClientHandle, ctx C.ContextHandle, session C
 		return BitwardenError
 	}
 
-	if err = clientGo.Auth().RefreshToken(ctxGo.ctx, sessionGo); err != nil {
+	if err = clientGo.Auth().RefreshToken(ctxGo, sessionGo); err != nil {
 		setLastError(err)
 		return BitwardenError
 	}

@@ -5,7 +5,6 @@ package main
 */
 import "C"
 import (
-	"go.chrastecky.dev/bitwarden-client/bitwarden"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
 )
 
@@ -21,12 +20,7 @@ func BitwardenSyncVault(
 		return BitwardenError
 	}
 
-	clientGo, err := getHandleObj[bitwarden.Client](handle(client))
-	if err != nil {
-		setLastError(err)
-		return BitwardenError
-	}
-	ctxGo, err := getHandleObj[*contextHandle](handle(ctx))
+	clientGo, ctxGo, err := getCommonAuthHandles(client, ctx)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError
@@ -37,7 +31,7 @@ func BitwardenSyncVault(
 		return BitwardenError
 	}
 
-	syncResult, err := clientGo.Vault().Sync(ctxGo.ctx, sessionGo)
+	syncResult, err := clientGo.Vault().Sync(ctxGo, sessionGo)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError

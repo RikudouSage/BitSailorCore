@@ -8,7 +8,6 @@ import "C"
 import (
 	"unsafe"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
 )
 
@@ -25,24 +24,14 @@ func BitwardenGetItem(
 		return BitwardenError
 	}
 
-	vaultGo, err := getHandleObj[bitwarden.Vault](handle(vault))
-	if err != nil {
-		setLastError(err)
-		return BitwardenError
-	}
-	ctxGo, err := getHandleObj[*contextHandle](handle(ctx))
-	if err != nil {
-		setLastError(err)
-		return BitwardenError
-	}
-	sessionGo, err := getHandleObj[*result.Session](handle(session))
+	vaultGo, ctxGo, sessionGo, err := getCommonVaultHandles(vault, ctx, session)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError
 	}
 	itemIDGo := parseUUIDFromC(itemID)
 
-	item, err := vaultGo.GetItem(ctxGo.ctx, sessionGo, itemIDGo)
+	item, err := vaultGo.GetItem(ctxGo, sessionGo, itemIDGo)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError

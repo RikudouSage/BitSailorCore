@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -67,6 +68,9 @@ func request[TResponse any](
 	}
 
 	if err = json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		if errors.Is(err, io.EOF) {
+			return out, nil
+		}
 		return out, fmt.Errorf("failed decoding response: %w", err)
 	}
 
