@@ -7,6 +7,7 @@ package main
 import "C"
 import "go.chrastecky.dev/bitwarden-client/bitwarden"
 
+//export BitwardenGeneratePassword
 func BitwardenGeneratePassword(client C.ClientHandle, request C.BitwardenPasswordGeneratorRequest, out **C.char) C.BitwardenResult {
 	if out == nil {
 		setLastError(nullPointerError("out"))
