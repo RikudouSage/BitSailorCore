@@ -15,10 +15,15 @@ var ErrItemNotFound = errors.New("the item was not found in the vault")
 
 type Vault interface {
 	Sync(ctx context.Context, session *result.Session) (Vault, error)
-	GetItem(ctx context.Context, session *result.Session, itemID uuid.UUID) (*result.Item, error)
+
 	GetItems(ctx context.Context, session *result.Session) ([]*result.Item, error)
+	GetItem(ctx context.Context, session *result.Session, itemID uuid.UUID) (*result.Item, error)
 	CreateItem(ctx context.Context, session *result.Session, item *result.Item) error
 	DeleteItem(ctx context.Context, session *result.Session, itemID uuid.UUID) error
+
+	GetSends(ctx context.Context, session *result.Session) ([]*result.Send, error)
+	GetSend(ctx context.Context, session *result.Session, itemID uuid.UUID) (*result.Send, error)
+	CreateSend(ctx context.Context, session *result.Session, item *result.Send) error
 
 	GetVaultData() *result.VaultData
 	WithVaultData(vaultData *result.VaultData) Vault

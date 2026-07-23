@@ -9,9 +9,9 @@ type VaultData struct {
 	Folders     []*Folder     `json:"folders"`
 	Collections []*Collection `json:"collections"`
 	Items       []*Item       `json:"ciphers"`
+	Sends       []*Send       `json:"sends"`
 
 	// policies
-	// sends
 	// domains
 	// policiesNew
 	// userDecryption

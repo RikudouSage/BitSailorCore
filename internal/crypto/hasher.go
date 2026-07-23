@@ -4,9 +4,12 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
+	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
 	"golang.org/x/crypto/argon2"
+	"golang.org/x/crypto/hkdf"
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -25,6 +28,22 @@ func DeriveMasterKey(email, password string, keyType KDFType, config *KDFConfig)
 	}
 
 	return nil, fmt.Errorf("unsupported key type: %d", keyType)
+}
+
+func DeriveSendKey(seed dto.Key) (dto.Key, error) {
+	reader := hkdf.New(
+		sha256.New,
+		seed,
+		[]byte("bitwarden-send"),
+		[]byte("send"),
+	)
+
+	key := make([]byte, 64)
+	if _, err := io.ReadFull(reader, key); err != nil {
+		return nil, fmt.Errorf("failed generating key: %w", err)
+	}
+
+	return key, nil
 }
 
 func deriveSha256(email, password string, iterations int) []byte {

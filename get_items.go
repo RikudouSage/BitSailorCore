@@ -15,7 +15,7 @@ func (receiver *vault) GetItems(ctx context.Context, session *result.Session) ([
 
 	resultSlice := types.NewSyncSlice[*result.Item](len(receiver.vaultData.Items), len(receiver.vaultData.Items))
 
-	wg, _ := errgroup.WithContext(ctx)
+	wg, ctx := errgroup.WithContext(ctx)
 	wg.SetLimit(20)
 
 	for index, item := range receiver.vaultData.Items {

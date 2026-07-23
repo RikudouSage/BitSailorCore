@@ -12,11 +12,12 @@ import (
 	"github.com/samber/lo"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/helper"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
 )
 
 func (receiver *vault) DecryptItem(ctx context.Context, session *result.Session, item *result.Item) (*result.Item, error) {
-	key, err := receiver.getDecryptionKey(session, item)
+	key, err := receiver.getItemDecryptionKey(session, item)
 	if err != nil {
 		return nil, fmt.Errorf("failed fetching decryption key: %w", err)
 	}
@@ -52,15 +53,15 @@ func (receiver *vault) DecryptItem(ctx context.Context, session *result.Session,
 
 	switch item.Type {
 	case result.ItemTypeLogin:
-		err = receiver.decryptStruct(ctx, resultItem.Login, key)
+		err = receiver.decryptStruct(ctx, resultItem.Login, key, nil)
 	case result.ItemTypeSSHKey:
-		err = receiver.decryptStruct(ctx, resultItem.SSHKey, key)
+		err = receiver.decryptStruct(ctx, resultItem.SSHKey, key, nil)
 	case result.ItemTypeCard:
-		err = receiver.decryptStruct(ctx, resultItem.Card, key)
+		err = receiver.decryptStruct(ctx, resultItem.Card, key, nil)
 	case result.ItemTypIdentity:
-		err = receiver.decryptStruct(ctx, resultItem.Identity, key)
+		err = receiver.decryptStruct(ctx, resultItem.Identity, key, nil)
 	case result.ItemTypeSecureNote:
-		err = receiver.decryptStruct(ctx, resultItem.SecureNote, key)
+		err = receiver.decryptStruct(ctx, resultItem.SecureNote, key, nil)
 	default:
 		return nil, fmt.Errorf("unimplemented item type %d", item.Type)
 	}
@@ -71,13 +72,19 @@ func (receiver *vault) DecryptItem(ctx context.Context, session *result.Session,
 	return resultItem, nil
 }
 
-func (receiver *vault) decryptStruct(ctx context.Context, target any, key dto.Key) error {
+func (receiver *vault) decryptStruct(ctx context.Context, target any, key dto.Key, ignoreFields []string) error {
 	typ := reflect.TypeOf(target)
 	if typ.Kind() != reflect.Pointer || typ.Elem().Kind() != reflect.Struct {
 		return fmt.Errorf("target must be a pointer to a struct, %T given", target)
 	}
 
+	ignoreFieldMap := helper.SliceToLookupMap(ignoreFields)
+
 	for field := range typ.Elem().Fields() {
+		if ignoreFieldMap[field.Name] {
+			continue
+		}
+
 		if field.Type.Kind() == reflect.String || (field.Type.Kind() == reflect.Pointer && field.Type.Elem().Kind() == reflect.String) {
 			strVal, err := getStringValue(field, target)
 			if err != nil {
@@ -103,12 +110,21 @@ func (receiver *vault) decryptStruct(ctx context.Context, target any, key dto.Ke
 
 			value.SetString(newVal)
 		}
+		if field.Type.Kind() == reflect.Pointer && field.Type.Elem().Kind() == reflect.Struct {
+			value := reflect.ValueOf(target).Elem().FieldByName(field.Name)
+			if value.IsNil() {
+				continue
+			}
+			if err := receiver.decryptStruct(ctx, value.Interface(), key, ignoreFields); err != nil {
+				return err
+			}
+		}
 		if field.Type.Kind() == reflect.Slice {
 			value := reflect.ValueOf(target).Elem().FieldByName(field.Name)
 			for i := range value.Len() {
 				elem := value.Index(i)
 				if elem.Kind() == reflect.Pointer && elem.Elem().Kind() == reflect.Struct {
-					err := receiver.decryptStruct(ctx, elem.Elem().Addr().Interface(), key)
+					err := receiver.decryptStruct(ctx, elem.Elem().Addr().Interface(), key, ignoreFields)
 					if err != nil {
 						return err
 					}
@@ -120,7 +136,7 @@ func (receiver *vault) decryptStruct(ctx context.Context, target any, key dto.Ke
 	return nil
 }
 
-func (receiver *vault) getDecryptionKey(session *result.Session, item *result.Item) (dto.Key, error) {
+func (receiver *vault) getItemDecryptionKey(session *result.Session, item *result.Item) (dto.Key, error) {
 	key := session.Encryption.UserKey
 	if item.OrganizationID != uuid.Nil {
 		orgKeys, err := receiver.getOrganizationKeys(session)
