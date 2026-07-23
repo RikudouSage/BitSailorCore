@@ -11,6 +11,7 @@ import (
 	clone "github.com/huandu/go-clone/generic"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/helper"
 	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
 )
 
@@ -24,7 +25,7 @@ func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, 
 	}
 
 	resultItem := clone.Clone(item)
-	err := receiver.encryptStruct(ctx, resultItem, session.Encryption.UserKey)
+	err := receiver.encryptStruct(ctx, resultItem, session.Encryption.UserKey, nil)
 	if err != nil {
 		return fmt.Errorf("failed encrypting struct: %w", err)
 	}
@@ -45,13 +46,19 @@ func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, 
 	return nil
 }
 
-func (receiver *vault) encryptStruct(ctx context.Context, target any, key dto.Key) error {
+func (receiver *vault) encryptStruct(ctx context.Context, target any, key dto.Key, ignoreFields []string) error {
 	typ := reflect.TypeOf(target)
 	if typ.Kind() != reflect.Pointer || typ.Elem().Kind() != reflect.Struct {
 		return fmt.Errorf("target must be a pointer to a struct, %T given", target)
 	}
 
+	ignoreLookupMap := helper.SliceToLookupMap(ignoreFields)
+
 	for field := range typ.Elem().Fields() {
+		if ignoreLookupMap[field.Name] {
+			continue
+		}
+
 		if field.Type.Kind() == reflect.String || (field.Type.Kind() == reflect.Pointer && field.Type.Elem().Kind() == reflect.String) {
 			strVal, err := getStringValue(field, target)
 			if err != nil {
@@ -77,7 +84,7 @@ func (receiver *vault) encryptStruct(ctx context.Context, target any, key dto.Ke
 			if value.IsNil() {
 				continue
 			}
-			if err := receiver.encryptStruct(ctx, value.Interface(), key); err != nil {
+			if err := receiver.encryptStruct(ctx, value.Interface(), key, ignoreFields); err != nil {
 				return err
 			}
 		} else if field.Type.Kind() == reflect.Slice {
@@ -85,7 +92,7 @@ func (receiver *vault) encryptStruct(ctx context.Context, target any, key dto.Ke
 			for i := range value.Len() {
 				elem := value.Index(i)
 				if elem.Kind() == reflect.Pointer && elem.Elem().Kind() == reflect.Struct {
-					err := receiver.encryptStruct(ctx, elem.Elem().Addr().Interface(), key)
+					err := receiver.encryptStruct(ctx, elem.Elem().Addr().Interface(), key, ignoreFields)
 					if err != nil {
 						return err
 					}
