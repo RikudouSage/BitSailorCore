@@ -116,31 +116,31 @@ func (receiver Field) CheckboxValue() bool {
 }
 
 type Item struct {
-	ID                  uuid.UUID        `json:"id"`
+	ID                  uuid.UUID        `json:"id,omitzero"`
 	Type                ItemType         `json:"type"`
-	Notes               *string          `json:"notes"`
-	OrganizationUseTOTP *bool            `json:"organizationUseTotp"`
-	RevisionDate        time.Time        `json:"revisionDate"`
-	DeletedDate         *time.Time       `json:"deletedDate"`
+	Notes               *string          `json:"notes,omitempty"`
+	OrganizationUseTOTP *bool            `json:"organizationUseTotp,omitempty"`
+	RevisionDate        time.Time        `json:"revisionDate,omitzero"`
+	DeletedDate         *time.Time       `json:"deletedDate,omitempty"`
 	Favorite            bool             `json:"favorite"`
-	OrganizationID      uuid.UUID        `json:"organizationId"`
-	Key                 *string          `json:"key"`
-	Permissions         *ItemPermissions `json:"permissions"`
+	OrganizationID      uuid.UUID        `json:"organizationId,omitzero"`
+	Key                 *string          `json:"key,omitempty"`
+	Permissions         *ItemPermissions `json:"permissions,omitempty"`
 	Edit                bool             `json:"edit"`
-	CollectionIDs       []uuid.UUID      `json:"collectionIds"`
-	ArchivedDate        *time.Time       `json:"archivedDate"`
-	FolderID            uuid.UUID        `json:"folderId"`
+	CollectionIDs       []uuid.UUID      `json:"collectionIds,omitempty"`
+	ArchivedDate        *time.Time       `json:"archivedDate,omitempty"`
+	FolderID            uuid.UUID        `json:"folderId,omitzero"`
 	ViewPassword        bool             `json:"viewPassword"`
 	Name                string           `json:"name"`
-	CreationDate        time.Time        `json:"creationDate"`
+	CreationDate        time.Time        `json:"creationDate,omitzero"`
 	Reprompt            types.NumBool    `json:"reprompt"`
-	Fields              []*Field         `json:"fields"`
+	Fields              []*Field         `json:"fields,omitempty"`
 
-	Login      *ItemLogin      `json:"login"`
-	Card       *ItemCard       `json:"card"`
-	SecureNote *ItemSecureNote `json:"secureNote"`
-	Identity   *ItemIdentity   `json:"identity"`
-	SSHKey     *ItemSSHKey     `json:"sshKey"`
+	Login      *ItemLogin      `json:"login,omitempty"`
+	Card       *ItemCard       `json:"card,omitempty"`
+	SecureNote *ItemSecureNote `json:"secureNote,omitempty"`
+	Identity   *ItemIdentity   `json:"identity,omitempty"`
+	SSHKey     *ItemSSHKey     `json:"sshKey,omitempty"`
 
 	// bankAccount
 	// identity

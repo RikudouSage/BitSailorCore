@@ -54,7 +54,7 @@ func encryptCLIFileData(plaintext []byte, key []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	padded := pkcs7Pad(plaintext, aes.BlockSize)
+	padded := crypto.Pkcs7Pad(plaintext, aes.BlockSize)
 	ciphertext := make([]byte, len(padded))
 	cipher.NewCBCEncrypter(block, iv).CryptBlocks(ciphertext, padded)
 
@@ -74,16 +74,4 @@ func encryptCLIFileData(plaintext []byte, key []byte) ([]byte, error) {
 	copy(out[1+len(iv)+len(macBytes):], ciphertext)
 
 	return out, nil
-}
-
-func pkcs7Pad(data []byte, blockSize int) []byte {
-	padLen := blockSize - len(data)%blockSize
-	out := make([]byte, len(data)+padLen)
-	copy(out, data)
-
-	for i := len(data); i < len(out); i++ {
-		out[i] = byte(padLen)
-	}
-
-	return out
 }

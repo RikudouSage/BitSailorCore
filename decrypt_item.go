@@ -2,6 +2,7 @@ package bitwarden
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -78,14 +79,12 @@ func (receiver *vault) decryptStruct(ctx context.Context, target any, key dto.Ke
 
 	for field := range typ.Elem().Fields() {
 		if field.Type.Kind() == reflect.String || (field.Type.Kind() == reflect.Pointer && field.Type.Elem().Kind() == reflect.String) {
-			var strVal string
-			if field.Type.Kind() == reflect.Pointer {
-				if reflect.ValueOf(target).Elem().FieldByName(field.Name).IsNil() {
+			strVal, err := getStringValue(field, target)
+			if err != nil {
+				if errors.Is(err, errValIsNil) {
 					continue
 				}
-				strVal = reflect.ValueOf(target).Elem().FieldByName(field.Name).Elem().String()
-			} else {
-				strVal = reflect.ValueOf(target).Elem().FieldByName(field.Name).String()
+				return err
 			}
 
 			if !strings.HasPrefix(strVal, "2.") || strings.Count(strVal, "|") != 2 {

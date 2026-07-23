@@ -72,25 +72,6 @@ func decryptEncryptedString(value string, encKey, macKey []byte) ([]byte, error)
 	return pkcs7Unpad(plaintext, aes.BlockSize)
 }
 
-func pkcs7Unpad(data []byte, blockSize int) ([]byte, error) {
-	if len(data) == 0 || len(data)%blockSize != 0 {
-		return nil, fmt.Errorf("invalid padding size: %d", len(data))
-	}
-
-	padLen := int(data[len(data)-1])
-	if padLen == 0 || padLen > blockSize || padLen > len(data) {
-		return nil, fmt.Errorf("invalid padding")
-	}
-
-	for _, b := range data[len(data)-padLen:] {
-		if int(b) != padLen {
-			return nil, fmt.Errorf("invalid padding")
-		}
-	}
-
-	return data[:len(data)-padLen], nil
-}
-
 func stretchMasterKey(masterKey []byte) (encKey []byte, macKey []byte, err error) {
 	encKey, err = hkdfSha256(masterKey, "enc", 32)
 	if err != nil {
