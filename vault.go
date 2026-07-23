@@ -24,6 +24,7 @@ type Vault interface {
 	GetSends(ctx context.Context, session *result.Session) ([]*result.Send, error)
 	GetSend(ctx context.Context, session *result.Session, itemID uuid.UUID) (*result.Send, error)
 	CreateSend(ctx context.Context, session *result.Session, item *result.Send) error
+	DeleteSend(ctx context.Context, session *result.Session, sendID uuid.UUID) error
 
 	GetVaultData() *result.VaultData
 	WithVaultData(vaultData *result.VaultData) Vault
