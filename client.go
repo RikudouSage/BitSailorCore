@@ -13,6 +13,7 @@ type Client interface {
 	Vault() Vault
 
 	GeneratePassword(request *PasswordGeneratorRequest) (string, error)
+	GeneratePassphrase(request *PassphraseGeneratorRequest) (string, error)
 }
 
 type client struct {

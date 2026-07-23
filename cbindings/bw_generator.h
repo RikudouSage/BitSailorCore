@@ -18,4 +18,11 @@ typedef struct {
     int* minSpecial;
 } BitwardenPasswordGeneratorRequest;
 
+typedef struct {
+    int* numWords;
+    char* wordSeparator;
+    bool* capitalize;
+    bool* includeNumber;
+} BitwardenPassphraseGeneratorRequest;
+
 #endif
