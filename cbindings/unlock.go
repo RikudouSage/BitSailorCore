@@ -5,7 +5,7 @@ package main
 */
 import "C"
 import (
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 //export BitwardenUnlockSession

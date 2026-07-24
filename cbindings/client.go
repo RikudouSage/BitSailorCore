@@ -15,7 +15,7 @@ import "C"
 import (
 	"net/http"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden"
+	"go.chrastecky.dev/bitsailor-core/bitwarden"
 )
 
 //export BitwardenNewClient

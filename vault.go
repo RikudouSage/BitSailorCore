@@ -7,7 +7,7 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 var ErrMissingVault = errors.New("the vault is missing, either run Sync() or WithVaultData() on it")

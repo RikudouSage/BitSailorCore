@@ -11,10 +11,10 @@ import (
 
 	"github.com/google/go-querystring/query"
 	"github.com/samber/lo"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
-	internalHttp "go.chrastecky.dev/bitwarden-client/bitwarden/internal/http"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 var ErrTwoFactorRequired = fmt.Errorf("two factor authentication required")

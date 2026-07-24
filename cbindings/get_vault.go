@@ -4,7 +4,7 @@ package main
 #include "bw_common.h"
 */
 import "C"
-import "go.chrastecky.dev/bitwarden-client/bitwarden"
+import "go.chrastecky.dev/bitsailor-core/bitwarden"
 
 //export BitwardenGetVault
 func BitwardenGetVault(client C.ClientHandle, out *C.VaultHandle) C.BitwardenResult {

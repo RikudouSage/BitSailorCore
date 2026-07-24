@@ -3,8 +3,8 @@ package bitwarden
 import (
 	"context"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/types"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/types"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 	"golang.org/x/sync/errgroup"
 )
 

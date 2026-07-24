@@ -7,7 +7,7 @@ import "C"
 import (
 	"encoding/json"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden"
+	"go.chrastecky.dev/bitsailor-core/bitwarden"
 )
 
 //export BitwardenExportEncryptedVault

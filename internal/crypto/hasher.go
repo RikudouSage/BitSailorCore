@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/hkdf"
 	"golang.org/x/crypto/pbkdf2"

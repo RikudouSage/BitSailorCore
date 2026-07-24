@@ -9,10 +9,10 @@ import (
 
 	"github.com/google/uuid"
 	clone "github.com/huandu/go-clone/generic"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/helper"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/helper"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, item *result.Item) error {

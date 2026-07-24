@@ -10,9 +10,9 @@ import (
 
 	"github.com/google/go-querystring/query"
 	"github.com/samber/lo"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal"
-	internalHttp "go.chrastecky.dev/bitwarden-client/bitwarden/internal/http"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal"
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func (receiver *auth) LoginApiKey(ctx context.Context, clientID, clientSecret string) (*result.Session, error) {

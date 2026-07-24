@@ -7,8 +7,8 @@ import "C"
 import (
 	"context"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func getCommonVaultHandles(

@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	clone "github.com/huandu/go-clone/generic"
 	"github.com/samber/lo"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func (receiver *vault) UpdateItem(ctx context.Context, session *result.Session, item *result.Item) error {

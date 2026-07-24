@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func TestUpdateItemUpdatesRemoteItemAndReplacesVaultData(t *testing.T) {

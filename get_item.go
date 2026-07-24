@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/samber/lo"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func (receiver *vault) GetItem(ctx context.Context, session *result.Session, itemID uuid.UUID) (*result.Item, error) {

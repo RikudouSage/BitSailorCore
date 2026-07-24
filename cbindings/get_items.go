@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/samber/lo"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 //export BitwardenGetItems

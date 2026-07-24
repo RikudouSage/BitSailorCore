@@ -1,6 +1,6 @@
 package bitwarden
 
-import "go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
+import "go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
 
 type preLoginResponse struct {
 	KDFType        crypto.KDFType `json:"kdf"`

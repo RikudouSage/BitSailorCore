@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
 	"golang.org/x/crypto/pbkdf2"
 )
 

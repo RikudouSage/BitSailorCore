@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	clone "github.com/huandu/go-clone/generic"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/types"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/types"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 	"golang.org/x/sync/errgroup"
 )
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func (receiver *vault) Sync(ctx context.Context, session *result.Session) (Vault, error) {

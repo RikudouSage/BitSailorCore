@@ -12,7 +12,7 @@ import (
 	"unsafe"
 
 	"github.com/google/uuid"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func parseUUIDFromC(source C.UUID) uuid.UUID {

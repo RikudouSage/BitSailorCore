@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
 )
 
 func DecryptNullableString(encrypted *string, userKey []byte) (*string, error) {

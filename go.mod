@@ -1,4 +1,4 @@
-module go.chrastecky.dev/bitwarden-client/bitwarden
+module go.chrastecky.dev/bitsailor-core/bitwarden
 
 go 1.26
 

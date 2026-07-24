@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func (receiver *auth) UnlockSession(_ context.Context, session *result.Session, email, password string) error {

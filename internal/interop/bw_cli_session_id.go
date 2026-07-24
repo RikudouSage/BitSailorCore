@@ -9,8 +9,8 @@ import (
 	"errors"
 	"fmt"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func CreateBWCLISessionID(session *result.Session) (BWSession string, protectedValue string, err error) {

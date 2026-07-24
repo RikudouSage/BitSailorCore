@@ -12,10 +12,10 @@ import (
 	"strconv"
 	"time"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
-	internalHttp "go.chrastecky.dev/bitwarden-client/bitwarden/internal/http"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func (receiver *vault) CreateSend(ctx context.Context, session *result.Session, item *result.Send) error {

@@ -10,8 +10,8 @@ import (
 	"unsafe"
 
 	"github.com/google/uuid"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/types"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/types"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 //export BitwardenCreateItem

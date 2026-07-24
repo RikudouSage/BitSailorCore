@@ -8,7 +8,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
 )
 
 func EncryptString(input string, key dto.Key) (string, error) {

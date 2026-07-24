@@ -9,7 +9,7 @@ import "C"
 import (
 	"unsafe"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 //export BitwardenGetSends

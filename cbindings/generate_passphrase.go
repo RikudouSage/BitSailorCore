@@ -5,7 +5,7 @@ package main
 #include "bw_generator.h"
 */
 import "C"
-import "go.chrastecky.dev/bitwarden-client/bitwarden"
+import "go.chrastecky.dev/bitsailor-core/bitwarden"
 
 //export BitwardenGeneratePassphrase
 func BitwardenGeneratePassphrase(client C.ClientHandle, request C.BitwardenPassphraseGeneratorRequest, out **C.char) C.BitwardenResult {

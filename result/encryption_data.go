@@ -2,8 +2,8 @@ package result
 
 import (
 	"github.com/google/uuid"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/crypto"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
 )
 
 type AccountKeys struct {

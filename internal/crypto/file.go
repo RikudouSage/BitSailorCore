@@ -9,7 +9,7 @@ import (
 	"hash"
 	"io"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
 )
 
 const (

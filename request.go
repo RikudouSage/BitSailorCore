@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"go.chrastecky.dev/bitwarden-client/bitwarden/internal"
-	internalHttp "go.chrastecky.dev/bitwarden-client/bitwarden/internal/http"
-	"go.chrastecky.dev/bitwarden-client/bitwarden/result"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal"
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
 func request[TResponse any](
