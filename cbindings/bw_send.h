@@ -58,4 +58,9 @@ typedef struct {
     char* inputFilePath;
 } BitwardenSend;
 
+typedef struct {
+    BitwardenSend* items;
+    size_t len;
+} BitwardenSendSlice;
+
 #endif
