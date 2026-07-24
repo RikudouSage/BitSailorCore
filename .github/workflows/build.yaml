@@ -16,8 +16,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Nix
         uses: cachix/install-nix-action@v31
+      - name: Pre-build devShell
+        run: nix build --no-link .#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').default
       - name: Build release libraries
-        run: nix develop --command make release-all
+        shell: 'nix develop -c bash -e {0}'
+        run: make release-all
       - name: Upload release libraries
         uses: actions/upload-artifact@v4
         with:

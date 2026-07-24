@@ -30,6 +30,7 @@
         in {
           default = pkgs.mkShell {
             buildInputs = [
+              pkgs.bash
               pkgs.go
               pkgs.golangci-lint
               pkgs.patchelf
