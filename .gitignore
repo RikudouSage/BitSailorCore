@@ -1,4 +1,6 @@
+/.direnv
 /.idea
 *.iml
 /libbw.h
 /libbw.so
+/out
