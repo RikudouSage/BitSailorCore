@@ -12,6 +12,10 @@ type Option func(bwClient *client) error
 
 func WithBaseURL(baseURL string) Option {
 	return func(bwClient *client) error {
+		if baseURL == "" {
+			return nil
+		}
+
 		parsed, err := url.Parse(baseURL)
 		if err != nil {
 			return fmt.Errorf("failed parsing base url: %w", err)
@@ -24,6 +28,10 @@ func WithBaseURL(baseURL string) Option {
 
 func WithIdentityURL(identityURL string) Option {
 	return func(bwClient *client) error {
+		if identityURL == "" {
+			return nil
+		}
+
 		parsed, err := url.Parse(identityURL)
 		if err != nil {
 			return fmt.Errorf("failed parsing identity url: %w", err)
@@ -35,6 +43,10 @@ func WithIdentityURL(identityURL string) Option {
 
 func WithAPIURL(apiURL string) Option {
 	return func(bwClient *client) error {
+		if apiURL == "" {
+			return nil
+		}
+
 		parsed, err := url.Parse(apiURL)
 		if err != nil {
 			return fmt.Errorf("failed parsing api url: %w", err)
