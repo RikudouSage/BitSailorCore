@@ -19,6 +19,7 @@ type Vault interface {
 	GetItems(ctx context.Context, session *result.Session) ([]*result.Item, error)
 	GetItem(ctx context.Context, session *result.Session, itemID uuid.UUID) (*result.Item, error)
 	CreateItem(ctx context.Context, session *result.Session, item *result.Item) error
+	UpdateItem(ctx context.Context, session *result.Session, item *result.Item) error
 	DeleteItem(ctx context.Context, session *result.Session, itemID uuid.UUID) error
 
 	GetSends(ctx context.Context, session *result.Session) ([]*result.Send, error)
