@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'v*.*.*'
   pull_request:
   workflow_dispatch:
 
 jobs:
-  check-build:
-    name: Check build
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,3 +29,31 @@ jobs:
           name: release-libraries
           path: out/
           if-no-files-found: error
+
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    permissions:
+      contents: write
+    steps:
+      - name: Download release libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: release-libraries
+          path: release-libraries
+      - name: Zip release libraries
+        run: |
+          mkdir -p release-assets
+          find release-libraries -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= read -r -d '' dir; do
+            name="$(basename "$dir")"
+            (cd release-libraries && zip -r "../release-assets/${name}.zip" "$name")
+          done
+          test -n "$(find release-assets -type f -name '*.zip' -print -quit)"
+      - name: Upload release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*.zip
+          generate_release_notes: true
+          fail_on_unmatched_files: true
