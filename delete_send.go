@@ -18,6 +18,9 @@ func (receiver *vault) DeleteSend(ctx context.Context, session *result.Session, 
 	targetUri := new(*receiver.baseURL)
 	targetUri.Path = fmt.Sprintf("/sends/%s", sendID)
 
+	if err := receiver.auth.refreshIfNeeded(ctx, session); err != nil {
+		return err
+	}
 	_, err := request[any](ctx, receiver.httpClient, http.MethodDelete, targetUri, nil, session)
 	if err != nil {
 		return fmt.Errorf("failed deleting send: %w", err)

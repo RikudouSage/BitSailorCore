@@ -36,12 +36,14 @@ type vault struct {
 	httpClient *http.Client
 
 	vaultData *result.VaultData
+	auth      *auth
 }
 
-func newVault(baseURL *url.URL, httpClient *http.Client) *vault {
+func newVault(baseURL *url.URL, httpClient *http.Client, auth *auth) *vault {
 	return &vault{
 		baseURL:    baseURL,
 		httpClient: httpClient,
+		auth:       auth,
 	}
 }
 

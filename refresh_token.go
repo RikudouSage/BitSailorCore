@@ -56,3 +56,16 @@ func (receiver *auth) RefreshToken(ctx context.Context, session *result.Session)
 
 	return nil
 }
+
+func (receiver *auth) refreshIfNeeded(ctx context.Context, session *result.Session) error {
+	if session.Auth.ExpiresAt.After(receiver.now()) {
+		return nil
+	}
+
+	err := receiver.RefreshToken(ctx, session)
+	if err != nil {
+		return fmt.Errorf("failed refreshing token: %w", err)
+	}
+
+	return nil
+}

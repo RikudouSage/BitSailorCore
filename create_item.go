@@ -32,6 +32,11 @@ func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, 
 
 	targetUri := new(*receiver.baseURL)
 	targetUri.Path = "/ciphers"
+
+	if err = receiver.auth.refreshIfNeeded(ctx, session); err != nil {
+		return err
+	}
+
 	newItemEnc, err := request[*result.Item](ctx, receiver.httpClient, http.MethodPost, targetUri, resultItem, session)
 	if err != nil {
 		return fmt.Errorf("failed creating the item: %w", err)

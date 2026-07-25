@@ -14,6 +14,10 @@ func (receiver *vault) Sync(ctx context.Context, session *result.Session) (Vault
 		return nil, errors.New("session auth data is nil")
 	}
 
+	if err := receiver.auth.refreshIfNeeded(ctx, session); err != nil {
+		return nil, err
+	}
+
 	uri := new(*receiver.baseURL)
 	uri.Path = "/sync"
 

@@ -29,6 +29,9 @@ func (receiver *vault) UpdateItem(ctx context.Context, session *result.Session, 
 
 	targetUri := new(*receiver.baseURL)
 	targetUri.Path = fmt.Sprintf("/ciphers/%s", item.ID)
+	if err = receiver.auth.refreshIfNeeded(ctx, session); err != nil {
+		return err
+	}
 	updatedItemEnc, err := request[*result.Item](ctx, receiver.httpClient, http.MethodPut, targetUri, resultItem, session)
 	if err != nil {
 		return fmt.Errorf("failed updating the item: %w", err)
