@@ -52,7 +52,7 @@ func (receiver *client) Auth() Auth {
 
 func (receiver *client) Vault() Vault {
 	if receiver.vault == nil {
-		receiver.vault = newVault(receiver.apiURL, receiver.httpClient, receiver.auth)
+		receiver.vault = newVault(receiver.apiURL, receiver.httpClient, receiver.Auth().(*auth))
 	}
 
 	return receiver.vault
