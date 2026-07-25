@@ -58,6 +58,9 @@ func (receiver *auth) RefreshToken(ctx context.Context, session *result.Session)
 }
 
 func (receiver *auth) refreshIfNeeded(ctx context.Context, session *result.Session) error {
+	if session == nil || session.Auth == nil {
+		return nil
+	}
 	if session.Auth.ExpiresAt.After(receiver.now()) {
 		return nil
 	}
