@@ -37,5 +37,5 @@ type apiKeyLoginRequest struct {
 type refreshLoginRequest struct {
 	GrantType    string `url:"grant_type"`
 	ClientID     string `url:"client_id"`
-	ClientSecret string `url:"client_secret"`
+	RefreshToken string `url:"refresh_token"`
 }

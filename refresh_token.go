@@ -16,10 +16,23 @@ import (
 )
 
 func (receiver *auth) RefreshToken(ctx context.Context, session *result.Session) error {
+	if session.Auth.RefreshToken == "" && session.Auth.ClientID != nil && session.Auth.ClientSecret != nil {
+		newSession, err := receiver.LoginApiKey(ctx, *session.Auth.ClientID, *session.Auth.ClientSecret)
+		if err != nil {
+			return fmt.Errorf("failed refreshing through new login via client id / client secret: %w", err)
+		}
+
+		session.Auth.TokenType = newSession.Auth.TokenType
+		session.Auth.AccessToken = newSession.Auth.AccessToken
+		session.Auth.RefreshToken = newSession.Auth.RefreshToken
+		session.Auth.ExpiresAt = newSession.Auth.ExpiresAt
+		return nil
+	}
+
 	requestData := &refreshLoginRequest{
 		GrantType:    "refresh_token",
 		ClientID:     "cli",
-		ClientSecret: session.Auth.RefreshToken,
+		RefreshToken: session.Auth.RefreshToken,
 	}
 
 	req, err := http.NewRequestWithContext(

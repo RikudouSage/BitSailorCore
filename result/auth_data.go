@@ -7,4 +7,7 @@ type AuthData struct {
 	ExpiresAt    time.Time `json:"expiresAt"`
 	RefreshToken string    `json:"refreshToken"`
 	TokenType    string    `json:"tokenType"`
+
+	ClientID     *string `json:"clientId,omitempty"`
+	ClientSecret *string `json:"clientSecret,omitempty"`
 }

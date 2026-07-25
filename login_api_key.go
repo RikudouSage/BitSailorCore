@@ -59,6 +59,9 @@ func (receiver *auth) LoginApiKey(ctx context.Context, clientID, clientSecret st
 			ExpiresAt:    receiver.now().Add(time.Duration(token.ExpiresIn) * time.Second),
 			RefreshToken: token.RefreshToken,
 			TokenType:    token.TokenType,
+
+			ClientSecret: new(clientSecret),
+			ClientID:     new(clientID),
 		},
 		Encryption: &result.EncryptionData{
 			EncryptedPrivateKey: token.GetPrivateKey(),
