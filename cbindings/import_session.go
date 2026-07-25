@@ -32,7 +32,7 @@ func BitwardenImportSession(inSession *C.SessionHandle, exportData *C.char, outS
 		}
 	}
 
-	if err := json.Unmarshal(C.GoString(exportData), &sessionGo); err != nil {
+	if err := json.Unmarshal([]byte(C.GoString(exportData)), &sessionGo); err != nil {
 		setLastError(fmt.Errorf("failed decoding json data: %w", err))
 		return BitwardenError
 	}
