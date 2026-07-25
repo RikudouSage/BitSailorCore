@@ -12,14 +12,14 @@ type AccountKeys struct {
 }
 
 type EncryptionData struct {
-	UserKey          dto.Key
-	OrganizationKeys map[uuid.UUID]dto.Key
+	UserKey          dto.Key               `json:"userKey"`
+	OrganizationKeys map[uuid.UUID]dto.Key `json:"organizationKeys"`
 
-	EncryptedUserKey    *string
-	EncryptedPrivateKey *string
+	EncryptedUserKey    *string `json:"encryptedUserKey"`
+	EncryptedPrivateKey *string `json:"encryptedPrivateKey"`
 
-	KDFType        crypto.KDFType
-	KDFIterations  int
-	KDFMemory      *int
-	KDFParallelism *int
+	KDFType        crypto.KDFType `json:"kdfType"`
+	KDFIterations  int            `json:"kdfIterations"`
+	KDFMemory      *int           `json:"kdfMemory"`
+	KDFParallelism *int           `json:"kdfParallelism"`
 }

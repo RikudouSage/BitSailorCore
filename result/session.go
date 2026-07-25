@@ -5,8 +5,8 @@ import (
 )
 
 type Session struct {
-	Auth       *AuthData
-	Encryption *EncryptionData
+	Auth       *AuthData       `json:"auth"`
+	Encryption *EncryptionData `json:"encryption"`
 }
 
 func (receiver *Session) ValidateForUnlock() error {
