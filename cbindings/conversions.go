@@ -45,31 +45,30 @@ func cItemPermissionsFromPtr(value *result.ItemPermissions) *C.BitwardenItemPerm
 	return out
 }
 
-func cItemFieldSlice(fields []*result.Field) C.BitwardenItemFieldSlice {
+func cItemFieldSliceParts(fields []*result.Field) (unsafe.Pointer, C.size_t) {
 	if len(fields) == 0 {
-		return C.BitwardenItemFieldSlice{}
+		return nil, 0
 	}
 
 	items := (*C.BitwardenItemField)(C.malloc(C.size_t(len(fields)) * C.size_t(unsafe.Sizeof(C.BitwardenItemField{}))))
 	out := unsafe.Slice(items, len(fields))
 	for i, field := range fields {
-		out[i] = cItemFieldFromPtr(field)
+		cItemFieldIntoC(&out[i], field)
 	}
 
-	return C.BitwardenItemFieldSlice{items: items, len: C.size_t(len(fields))}
+	return unsafe.Pointer(items), C.size_t(len(fields))
 }
 
-func cItemFieldFromPtr(field *result.Field) C.BitwardenItemField {
+func cItemFieldIntoC(out *C.BitwardenItemField, field *result.Field) {
 	if field == nil {
-		return C.BitwardenItemField{}
+		clearC(out)
+		return
 	}
 
-	return C.BitwardenItemField{
-		_type:    C.BitwardenFieldType(field.Type),
-		name:     C.CString(field.Name),
-		value:    cStringFromPtr(field.Value),
-		linkedId: cIntFromPtr(field.LinkedID),
-	}
+	putCValue(unsafe.Pointer(out), unsafe.Offsetof(out._type), C.BitwardenFieldType(field.Type))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.name), cStringPtr(field.Name))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.value), cStringPtrFromPtr(field.Value))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.linkedId), cIntPtr(field.LinkedID))
 }
 
 func cItemLoginFromPtr(login *result.ItemLogin) *C.BitwardenItemLogin {
@@ -78,41 +77,49 @@ func cItemLoginFromPtr(login *result.ItemLogin) *C.BitwardenItemLogin {
 	}
 
 	out := (*C.BitwardenItemLogin)(C.malloc(C.size_t(unsafe.Sizeof(C.BitwardenItemLogin{}))))
-	*out = C.BitwardenItemLogin{
-		uri:                  C.CString(login.URI),
-		uris:                 cItemLoginURISlice(login.URIs),
-		username:             cStringFromPtr(login.Username),
-		password:             cStringFromPtr(login.Password),
-		passwordRevisionDate: cUnixMillisFromPtr(login.PasswordRevisionDate),
-		totp:                 cStringFromPtr(login.TOTP),
-	}
+	cItemLoginIntoC(out, login)
 	return out
 }
 
-func cItemLoginURISlice(uris []*result.ItemLoginURI) C.BitwardenItemLoginUriSlice {
+func cItemLoginIntoC(out *C.BitwardenItemLogin, login *result.ItemLogin) {
+	if login == nil {
+		clearC(out)
+		return
+	}
+
+	var uris C.BitwardenItemLoginUriSlice
+	urisItems, urisLen := cItemLoginURISliceParts(login.URIs)
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.uri), cStringPtr(login.URI))
+	putCSlice(unsafe.Pointer(out), unsafe.Offsetof(out.uris), unsafe.Offsetof(uris.items), unsafe.Offsetof(uris.len), urisItems, urisLen)
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.username), cStringPtrFromPtr(login.Username))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.password), cStringPtrFromPtr(login.Password))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.passwordRevisionDate), cUnixMillisPtr(login.PasswordRevisionDate))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.totp), cStringPtrFromPtr(login.TOTP))
+}
+
+func cItemLoginURISliceParts(uris []*result.ItemLoginURI) (unsafe.Pointer, C.size_t) {
 	if len(uris) == 0 {
-		return C.BitwardenItemLoginUriSlice{}
+		return nil, 0
 	}
 
 	items := (*C.BitwardenItemLoginUri)(C.malloc(C.size_t(len(uris)) * C.size_t(unsafe.Sizeof(C.BitwardenItemLoginUri{}))))
 	out := unsafe.Slice(items, len(uris))
 	for i, uri := range uris {
-		out[i] = cItemLoginURIFromPtr(uri)
+		cItemLoginURIIntoC(&out[i], uri)
 	}
 
-	return C.BitwardenItemLoginUriSlice{items: items, len: C.size_t(len(uris))}
+	return unsafe.Pointer(items), C.size_t(len(uris))
 }
 
-func cItemLoginURIFromPtr(uri *result.ItemLoginURI) C.BitwardenItemLoginUri {
+func cItemLoginURIIntoC(out *C.BitwardenItemLoginUri, uri *result.ItemLoginURI) {
 	if uri == nil {
-		return C.BitwardenItemLoginUri{}
+		clearC(out)
+		return
 	}
 
-	return C.BitwardenItemLoginUri{
-		uri:         C.CString(uri.URI),
-		uriChecksum: C.CString(uri.URIChecksum),
-		match:       C.BitwardenUriMatchType(uri.Match),
-	}
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.uri), cStringPtr(uri.URI))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.uriChecksum), cStringPtr(uri.URIChecksum))
+	putCValue(unsafe.Pointer(out), unsafe.Offsetof(out.match), C.BitwardenUriMatchType(uri.Match))
 }
 
 func cItemCardFromPtr(card *result.ItemCard) *C.BitwardenItemCard {
@@ -121,15 +128,22 @@ func cItemCardFromPtr(card *result.ItemCard) *C.BitwardenItemCard {
 	}
 
 	out := (*C.BitwardenItemCard)(C.malloc(C.size_t(unsafe.Sizeof(C.BitwardenItemCard{}))))
-	*out = C.BitwardenItemCard{
-		cardholderName:  C.CString(card.CardholderName),
-		brand:           C.CString(card.Brand),
-		number:          C.CString(card.Number),
-		expirationMonth: C.CString(card.ExpirationMonth),
-		expirationYear:  C.CString(card.ExpirationYear),
-		code:            C.CString(card.Code),
-	}
+	cItemCardIntoC(out, card)
 	return out
+}
+
+func cItemCardIntoC(out *C.BitwardenItemCard, card *result.ItemCard) {
+	if card == nil {
+		clearC(out)
+		return
+	}
+
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.cardholderName), cStringPtr(card.CardholderName))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.brand), cStringPtr(card.Brand))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.number), cStringPtr(card.Number))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.expirationMonth), cStringPtr(card.ExpirationMonth))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.expirationYear), cStringPtr(card.ExpirationYear))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.code), cStringPtr(card.Code))
 }
 
 func cItemSecureNoteFromPtr(secureNote *result.ItemSecureNote) *C.BitwardenItemSecureNote {
@@ -138,8 +152,17 @@ func cItemSecureNoteFromPtr(secureNote *result.ItemSecureNote) *C.BitwardenItemS
 	}
 
 	out := (*C.BitwardenItemSecureNote)(C.malloc(C.size_t(unsafe.Sizeof(C.BitwardenItemSecureNote{}))))
-	*out = C.BitwardenItemSecureNote{_type: C.int(secureNote.Type)}
+	cItemSecureNoteIntoC(out, secureNote)
 	return out
+}
+
+func cItemSecureNoteIntoC(out *C.BitwardenItemSecureNote, secureNote *result.ItemSecureNote) {
+	if secureNote == nil {
+		clearC(out)
+		return
+	}
+
+	putCValue(unsafe.Pointer(out), unsafe.Offsetof(out._type), C.int(secureNote.Type))
 }
 
 func cItemIdentityFromPtr(identity *result.ItemIdentity) *C.BitwardenItemIdentity {
@@ -148,26 +171,33 @@ func cItemIdentityFromPtr(identity *result.ItemIdentity) *C.BitwardenItemIdentit
 	}
 
 	out := (*C.BitwardenItemIdentity)(C.malloc(C.size_t(unsafe.Sizeof(C.BitwardenItemIdentity{}))))
-	*out = C.BitwardenItemIdentity{
-		firstName:      cStringFromPtr(identity.FirstName),
-		middleName:     cStringFromPtr(identity.MiddleName),
-		lastName:       cStringFromPtr(identity.LastName),
-		title:          cStringFromPtr(identity.Title),
-		passportNumber: cStringFromPtr(identity.PassportNumber),
-		username:       cStringFromPtr(identity.Username),
-		email:          cStringFromPtr(identity.Email),
-		phone:          cStringFromPtr(identity.Phone),
-		addressLine1:   cStringFromPtr(identity.AddressLine1),
-		addressLine2:   cStringFromPtr(identity.AddressLine2),
-		addressLine3:   cStringFromPtr(identity.AddressLine3),
-		city:           cStringFromPtr(identity.City),
-		state:          cStringFromPtr(identity.State),
-		postalCode:     cStringFromPtr(identity.PostalCode),
-		country:        cStringFromPtr(identity.Country),
-		ssn:            cStringFromPtr(identity.SSN),
-		company:        cStringFromPtr(identity.Company),
-	}
+	cItemIdentityIntoC(out, identity)
 	return out
+}
+
+func cItemIdentityIntoC(out *C.BitwardenItemIdentity, identity *result.ItemIdentity) {
+	if identity == nil {
+		clearC(out)
+		return
+	}
+
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.firstName), cStringPtrFromPtr(identity.FirstName))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.middleName), cStringPtrFromPtr(identity.MiddleName))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.lastName), cStringPtrFromPtr(identity.LastName))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.title), cStringPtrFromPtr(identity.Title))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.passportNumber), cStringPtrFromPtr(identity.PassportNumber))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.username), cStringPtrFromPtr(identity.Username))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.email), cStringPtrFromPtr(identity.Email))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.phone), cStringPtrFromPtr(identity.Phone))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.addressLine1), cStringPtrFromPtr(identity.AddressLine1))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.addressLine2), cStringPtrFromPtr(identity.AddressLine2))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.addressLine3), cStringPtrFromPtr(identity.AddressLine3))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.city), cStringPtrFromPtr(identity.City))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.state), cStringPtrFromPtr(identity.State))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.postalCode), cStringPtrFromPtr(identity.PostalCode))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.country), cStringPtrFromPtr(identity.Country))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.ssn), cStringPtrFromPtr(identity.SSN))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.company), cStringPtrFromPtr(identity.Company))
 }
 
 func cItemSSHKeyFromPtr(sshKey *result.ItemSSHKey) *C.BitwardenItemSshKey {
@@ -176,17 +206,24 @@ func cItemSSHKeyFromPtr(sshKey *result.ItemSSHKey) *C.BitwardenItemSshKey {
 	}
 
 	out := (*C.BitwardenItemSshKey)(C.malloc(C.size_t(unsafe.Sizeof(C.BitwardenItemSshKey{}))))
-	*out = C.BitwardenItemSshKey{
-		privateKey:     C.CString(sshKey.PrivateKey),
-		publicKey:      C.CString(sshKey.PublicKey),
-		keyFingerprint: C.CString(sshKey.KeyFingerprint),
-	}
+	cItemSSHKeyIntoC(out, sshKey)
 	return out
 }
 
-func cUUIDSlice(ids []uuid.UUID) C.UUIDSlice {
+func cItemSSHKeyIntoC(out *C.BitwardenItemSshKey, sshKey *result.ItemSSHKey) {
+	if sshKey == nil {
+		clearC(out)
+		return
+	}
+
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.privateKey), cStringPtr(sshKey.PrivateKey))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.publicKey), cStringPtr(sshKey.PublicKey))
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.keyFingerprint), cStringPtr(sshKey.KeyFingerprint))
+}
+
+func cUUIDSliceParts(ids []uuid.UUID) (unsafe.Pointer, C.size_t) {
 	if len(ids) == 0 {
-		return C.UUIDSlice{}
+		return nil, 0
 	}
 
 	items := (*C.UUID)(C.malloc(C.size_t(len(ids)) * C.size_t(unsafe.Sizeof(C.UUID{}))))
@@ -195,7 +232,7 @@ func cUUIDSlice(ids []uuid.UUID) C.UUIDSlice {
 		out[i] = parseUUIDIntoC(id)
 	}
 
-	return C.UUIDSlice{items: items, len: C.size_t(len(ids))}
+	return unsafe.Pointer(items), C.size_t(len(ids))
 }
 
 func cStringFromPtr(value *string) *C.char {
@@ -240,4 +277,8 @@ func cUnixMillisFromPtr(value *time.Time) *C.int64_t {
 	out := (*C.int64_t)(C.malloc(C.size_t(unsafe.Sizeof(C.int64_t(0)))))
 	*out = cUnixMillis(*value)
 	return out
+}
+
+func cUnixMillisPtr(value *time.Time) unsafe.Pointer {
+	return unsafe.Pointer(cUnixMillisFromPtr(value))
 }

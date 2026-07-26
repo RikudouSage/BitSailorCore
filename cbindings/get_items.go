@@ -36,7 +36,7 @@ func BitwardenGetItems(
 		return BitwardenError
 	}
 
-	*out = bitwardenItemSliceIntoC(items)
+	bitwardenItemSliceIntoC(out, items)
 
 	clearLastError()
 	return BitwardenSuccess
@@ -47,18 +47,20 @@ func BitwardenFreeItems(items *C.BitwardenItemSlice) {
 	freeBitwardenItemSlice(items)
 }
 
-func bitwardenItemSliceIntoC(items []*result.Item) C.BitwardenItemSlice {
+func bitwardenItemSliceIntoC(out *C.BitwardenItemSlice, items []*result.Item) {
 	if len(items) == 0 {
-		return C.BitwardenItemSlice{}
+		clearC(out)
+		return
 	}
 
 	cItems := (*C.BitwardenItem)(C.malloc(C.size_t(len(items)) * C.size_t(unsafe.Sizeof(C.BitwardenItem{}))))
-	out := unsafe.Slice(cItems, len(items))
+	cItemsSlice := unsafe.Slice(cItems, len(items))
 	for i, item := range items {
-		out[i] = bitwardenItemIntoC(item)
+		bitwardenItemIntoC(&cItemsSlice[i], item)
 	}
 
-	return C.BitwardenItemSlice{items: cItems, len: C.size_t(len(items))}
+	putCPtr(unsafe.Pointer(out), unsafe.Offsetof(out.items), unsafe.Pointer(cItems))
+	putCValue(unsafe.Pointer(out), unsafe.Offsetof(out.len), C.size_t(len(items)))
 }
 
 func freeBitwardenItemSlice(items *C.BitwardenItemSlice) {
@@ -72,5 +74,5 @@ func freeBitwardenItemSlice(items *C.BitwardenItemSlice) {
 	}
 	C.free(unsafe.Pointer(items.items))
 
-	*items = C.BitwardenItemSlice{}
+	clearC(items)
 }

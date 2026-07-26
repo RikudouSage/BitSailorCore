@@ -37,7 +37,7 @@ func BitwardenGetItem(
 		return BitwardenError
 	}
 
-	*outItem = bitwardenItemIntoC(item)
+	bitwardenItemIntoC(outItem, item)
 
 	clearLastError()
 	return BitwardenSuccess
@@ -48,37 +48,42 @@ func BitwardenFreeItem(item *C.BitwardenItem) {
 	freeBitwardenItem(item)
 }
 
-func bitwardenItemIntoC(item *result.Item) C.BitwardenItem {
+func bitwardenItemIntoC(out *C.BitwardenItem, item *result.Item) {
 	if item == nil {
-		return C.BitwardenItem{}
+		clearC(out)
+		return
 	}
 
-	return C.BitwardenItem{
-		id:                  parseUUIDIntoC(item.ID),
-		_type:               C.BitwardenItemType(item.Type),
-		notes:               cStringFromPtr(item.Notes),
-		organizationUseTotp: cBoolFromPtr(item.OrganizationUseTOTP),
-		revisionDate:        cUnixMillis(item.RevisionDate),
-		deletedDate:         cUnixMillisFromPtr(item.DeletedDate),
-		favorite:            C.bool(item.Favorite),
-		organizationId:      parseUUIDIntoC(item.OrganizationID),
-		key:                 cStringFromPtr(item.Key),
-		edit:                C.bool(item.Edit),
-		permissions:         cItemPermissionsFromPtr(item.Permissions),
-		collectionIds:       cUUIDSlice(item.CollectionIDs),
-		archivedDate:        cUnixMillisFromPtr(item.ArchivedDate),
-		folderId:            parseUUIDIntoC(item.FolderID),
-		viewPassword:        C.bool(item.ViewPassword),
-		name:                C.CString(item.Name),
-		creationDate:        cUnixMillis(item.CreationDate),
-		reprompt:            C.bool(item.Reprompt),
-		fields:              cItemFieldSlice(item.Fields),
-		login:               cItemLoginFromPtr(item.Login),
-		card:                cItemCardFromPtr(item.Card),
-		secureNote:          cItemSecureNoteFromPtr(item.SecureNote),
-		identity:            cItemIdentityFromPtr(item.Identity),
-		sshKey:              cItemSSHKeyFromPtr(item.SSHKey),
-	}
+	base := unsafe.Pointer(out)
+	var collectionIds C.UUIDSlice
+	var fields C.BitwardenItemFieldSlice
+	collectionItems, collectionLen := cUUIDSliceParts(item.CollectionIDs)
+	fieldItems, fieldLen := cItemFieldSliceParts(item.Fields)
+
+	putCValue(base, unsafe.Offsetof(out.id), parseUUIDIntoC(item.ID))
+	putCValue(base, unsafe.Offsetof(out._type), C.BitwardenItemType(item.Type))
+	putCPtr(base, unsafe.Offsetof(out.notes), cStringPtrFromPtr(item.Notes))
+	putCPtr(base, unsafe.Offsetof(out.organizationUseTotp), cBoolPtr(item.OrganizationUseTOTP))
+	putCValue(base, unsafe.Offsetof(out.revisionDate), cUnixMillis(item.RevisionDate))
+	putCPtr(base, unsafe.Offsetof(out.deletedDate), cUnixMillisPtr(item.DeletedDate))
+	putCValue(base, unsafe.Offsetof(out.favorite), C.bool(item.Favorite))
+	putCValue(base, unsafe.Offsetof(out.organizationId), parseUUIDIntoC(item.OrganizationID))
+	putCPtr(base, unsafe.Offsetof(out.key), cStringPtrFromPtr(item.Key))
+	putCValue(base, unsafe.Offsetof(out.edit), C.bool(item.Edit))
+	putCPtr(base, unsafe.Offsetof(out.permissions), cPtr(cItemPermissionsFromPtr(item.Permissions)))
+	putCSlice(base, unsafe.Offsetof(out.collectionIds), unsafe.Offsetof(collectionIds.items), unsafe.Offsetof(collectionIds.len), collectionItems, collectionLen)
+	putCPtr(base, unsafe.Offsetof(out.archivedDate), cUnixMillisPtr(item.ArchivedDate))
+	putCValue(base, unsafe.Offsetof(out.folderId), parseUUIDIntoC(item.FolderID))
+	putCValue(base, unsafe.Offsetof(out.viewPassword), C.bool(item.ViewPassword))
+	putCPtr(base, unsafe.Offsetof(out.name), cStringPtr(item.Name))
+	putCValue(base, unsafe.Offsetof(out.creationDate), cUnixMillis(item.CreationDate))
+	putCValue(base, unsafe.Offsetof(out.reprompt), C.bool(item.Reprompt))
+	putCSlice(base, unsafe.Offsetof(out.fields), unsafe.Offsetof(fields.items), unsafe.Offsetof(fields.len), fieldItems, fieldLen)
+	putCPtr(base, unsafe.Offsetof(out.login), cPtr(cItemLoginFromPtr(item.Login)))
+	putCPtr(base, unsafe.Offsetof(out.card), cPtr(cItemCardFromPtr(item.Card)))
+	putCPtr(base, unsafe.Offsetof(out.secureNote), cPtr(cItemSecureNoteFromPtr(item.SecureNote)))
+	putCPtr(base, unsafe.Offsetof(out.identity), cPtr(cItemIdentityFromPtr(item.Identity)))
+	putCPtr(base, unsafe.Offsetof(out.sshKey), cPtr(cItemSSHKeyFromPtr(item.SSHKey)))
 }
 
 func freeBitwardenItem(item *C.BitwardenItem) {
@@ -101,7 +106,7 @@ func freeBitwardenItem(item *C.BitwardenItem) {
 	freeItemIdentity(item.identity)
 	freeItemSSHKey(item.sshKey)
 
-	*item = C.BitwardenItem{}
+	clearC(item)
 }
 
 func freeUUIDSlice(value C.UUIDSlice) {

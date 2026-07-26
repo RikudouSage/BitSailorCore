@@ -40,7 +40,7 @@ func BitwardenCreateItem(
 	}
 
 	if outItem != nil {
-		*outItem = bitwardenItemIntoC(itemGo)
+		bitwardenItemIntoC(outItem, itemGo)
 	}
 
 	clearLastError()
