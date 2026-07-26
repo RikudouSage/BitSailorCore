@@ -7,7 +7,6 @@ typedef struct {
 	const char* baseUrl;
 	const char* identityUrl;
 	const char* apiUrl;
-	const char* sendUrl;
 	const Handle* httpClient;
 	const UUID* deviceId;
 } NewClientOptions;
@@ -35,9 +34,6 @@ func BitwardenNewClient(outHandle *C.ClientHandle, options C.NewClientOptions) C
 	}
 	if options.apiUrl != nil {
 		goOptions = append(goOptions, bitwarden.WithAPIURL(C.GoString(options.apiUrl)))
-	}
-	if options.sendUrl != nil {
-		goOptions = append(goOptions, bitwarden.WithSendURL(C.GoString(options.sendUrl)))
 	}
 	if options.httpClient != nil {
 		httpClient, err := getHandleObj[*http.Client](handle(*options.httpClient))

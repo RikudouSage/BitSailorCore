@@ -50,8 +50,8 @@ func (receiver *vault) decryptSend(ctx context.Context, session *result.Session,
 	}
 
 	accessUri := fmt.Sprintf(
-		"%s%s/%s",
-		receiver.normalizeSendURL(receiver.sendURL),
+		"%s/#/send/%s/%s",
+		receiver.sendURL,
 		*send.AccessID,
 		base64.RawURLEncoding.EncodeToString(seed),
 	)
@@ -62,21 +62,4 @@ func (receiver *vault) decryptSend(ctx context.Context, session *result.Session,
 	}
 
 	return nil
-}
-
-func (receiver *vault) normalizeSendURL(uri *url.URL) *url.URL {
-	newUri := clone.Clone(uri)
-	if uri.Fragment != "" || (uri.Path != "" && uri.Path != "/") {
-		return newUri
-	}
-
-	if uri.String() == defaultSendURL {
-		newUri.Path = "/"
-		newUri.Fragment = "/"
-	} else {
-		newUri.Path = "/"
-		newUri.Fragment = "/send/"
-	}
-
-	return newUri
 }

@@ -13,9 +13,9 @@ type Option func(bwClient *client) error
 func WithBaseURL(baseURL string) Option {
 	return func(bwClient *client) error {
 		if baseURL == "" {
+			fmt.Println("nulling all URLs")
 			bwClient.identityURL = nil
 			bwClient.apiURL = nil
-			bwClient.sendURL = nil
 			return nil
 		}
 
@@ -25,7 +25,6 @@ func WithBaseURL(baseURL string) Option {
 		}
 		bwClient.identityURL = parsed
 		bwClient.apiURL = parsed
-		bwClient.sendURL = parsed
 		return nil
 	}
 }
@@ -42,22 +41,6 @@ func WithIdentityURL(identityURL string) Option {
 			return fmt.Errorf("failed parsing identity url: %w", err)
 		}
 		bwClient.identityURL = parsed
-		return nil
-	}
-}
-
-func WithSendURL(sendURL string) Option {
-	return func(bwClient *client) error {
-		if sendURL == "" {
-			bwClient.sendURL = nil
-			return nil
-		}
-
-		parsed, err := url.Parse(sendURL)
-		if err != nil {
-			return fmt.Errorf("failed parsing send url: %w", err)
-		}
-		bwClient.sendURL = parsed
 		return nil
 	}
 }
