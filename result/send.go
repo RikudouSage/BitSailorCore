@@ -2,6 +2,7 @@ package result
 
 import (
 	"io"
+	"net/url"
 	"time"
 
 	"github.com/google/uuid"
@@ -57,4 +58,7 @@ type Send struct {
 	// only for creation
 	FileLength int       `json:"fileLength,omitzero"`
 	InputFile  io.Reader `json:"-"`
+
+	// manually constructed
+	AccessURL *url.URL `json:"accessURL,omitzero"`
 }

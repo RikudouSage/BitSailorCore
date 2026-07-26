@@ -54,6 +54,8 @@ typedef struct {
     BitwardenStringSlice emails;
     BitwardenSendText* text;
 
+    char* accessUrl;
+
     int fileLength;
     char* inputFilePath;
 } BitwardenSend;

@@ -179,6 +179,11 @@ func bitwardenSendIntoC(send *result.Send) C.BitwardenSend {
 		return C.BitwardenSend{}
 	}
 
+	var accessUriStr string
+	if send.AccessURL != nil {
+		accessUriStr = send.AccessURL.String()
+	}
+
 	return C.BitwardenSend{
 		id:             parseUUIDIntoC(send.ID),
 		accessId:       cStringFromPtr(send.AccessID),
@@ -199,6 +204,7 @@ func bitwardenSendIntoC(send *result.Send) C.BitwardenSend {
 		emails:         cStringSlice([]string(send.Emails)),
 		text:           cSendTextFromPtr(send.Text),
 		fileLength:     C.int(send.FileLength),
+		accessUrl:      C.CString(accessUriStr),
 	}
 }
 
@@ -274,6 +280,7 @@ func freeBitwardenSend(send *C.BitwardenSend) {
 	freeStringSlice(send.emails)
 	freeSendText(send.text)
 	C.free(unsafe.Pointer(send.inputFilePath))
+	C.free(unsafe.Pointer(send.accessUrl))
 
 	*send = C.BitwardenSend{}
 }

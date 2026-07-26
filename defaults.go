@@ -9,6 +9,8 @@ import (
 	"github.com/samber/lo"
 )
 
+const defaultSendURL = "https://send.bitwarden.com"
+
 func (receiver *client) provideDefaultsAndValidate() error {
 	if receiver.httpClient == nil {
 		receiver.httpClient = http.DefaultClient
@@ -18,6 +20,9 @@ func (receiver *client) provideDefaultsAndValidate() error {
 	}
 	if receiver.apiURL == nil {
 		receiver.apiURL = lo.Must(url.Parse("https://api.bitwarden.com"))
+	}
+	if receiver.sendURL == nil {
+		receiver.sendURL = lo.Must(url.Parse("https://send.bitwarden.com"))
 	}
 
 	if receiver.deviceID == uuid.Nil {

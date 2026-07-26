@@ -33,15 +33,17 @@ type Vault interface {
 
 type vault struct {
 	baseURL    *url.URL
+	sendURL    *url.URL
 	httpClient *http.Client
 
 	vaultData *result.VaultData
 	auth      *auth
 }
 
-func newVault(baseURL *url.URL, httpClient *http.Client, auth *auth) *vault {
+func newVault(baseURL *url.URL, sendURL *url.URL, httpClient *http.Client, auth *auth) *vault {
 	return &vault{
 		baseURL:    baseURL,
+		sendURL:    sendURL,
 		httpClient: httpClient,
 		auth:       auth,
 	}

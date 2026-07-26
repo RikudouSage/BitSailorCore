@@ -20,6 +20,7 @@ type client struct {
 	httpClient  *http.Client
 	identityURL *url.URL
 	apiURL      *url.URL
+	sendURL     *url.URL
 	deviceID    uuid.UUID
 
 	auth  *auth
@@ -52,7 +53,12 @@ func (receiver *client) Auth() Auth {
 
 func (receiver *client) Vault() Vault {
 	if receiver.vault == nil {
-		receiver.vault = newVault(receiver.apiURL, receiver.httpClient, receiver.Auth().(*auth))
+		receiver.vault = newVault(
+			receiver.apiURL,
+			receiver.sendURL,
+			receiver.httpClient,
+			receiver.Auth().(*auth),
+		)
 	}
 
 	return receiver.vault

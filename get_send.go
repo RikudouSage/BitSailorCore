@@ -2,11 +2,14 @@ package bitwarden
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"net/url"
 
 	"github.com/google/uuid"
 	clone "github.com/huandu/go-clone/generic"
 	"github.com/samber/lo"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
@@ -23,14 +26,57 @@ func (receiver *vault) GetSend(ctx context.Context, session *result.Session, ite
 	}
 
 	newSend := clone.Clone(originalItem)
-	key, err := receiver.getSendDecryptionKey(newSend, session.Encryption.UserKey)
-	if err != nil {
-		return nil, fmt.Errorf("failed getting decryption key: %w", err)
-	}
-	err = receiver.decryptStruct(ctx, newSend, key, []string{"Key"})
+	err := receiver.decryptSend(ctx, session, newSend)
 	if err != nil {
 		return nil, fmt.Errorf("failed decrypting the send item: %w", err)
 	}
 
 	return newSend, nil
+}
+
+func (receiver *vault) decryptSend(ctx context.Context, session *result.Session, send *result.Send) error {
+	seed, err := crypto.DecryptBytes(send.Key, session.Encryption.UserKey)
+	if err != nil {
+		return fmt.Errorf("failed decrypting seed: %w", err)
+	}
+
+	sendKey, err := crypto.DeriveSendKey(seed)
+	if err != nil {
+		return fmt.Errorf("failed deriving send key: %w", err)
+	}
+
+	if err = receiver.decryptStruct(ctx, send, sendKey, []string{"Key"}); err != nil {
+		return fmt.Errorf("failed decrypting send item: %w", err)
+	}
+
+	accessUri := fmt.Sprintf(
+		"%s%s/%s",
+		receiver.normalizeSendURL(receiver.sendURL),
+		*send.AccessID,
+		base64.RawURLEncoding.EncodeToString(seed),
+	)
+
+	send.AccessURL, err = url.Parse(accessUri)
+	if err != nil {
+		return fmt.Errorf("failed parsing access uri (%s): %w", accessUri, err)
+	}
+
+	return nil
+}
+
+func (receiver *vault) normalizeSendURL(uri *url.URL) *url.URL {
+	newUri := clone.Clone(uri)
+	if uri.Fragment != "" || (uri.Path != "" && uri.Path != "/") {
+		return newUri
+	}
+
+	if uri.String() == defaultSendURL {
+		newUri.Path = "/"
+		newUri.Fragment = "/"
+	} else {
+		newUri.Path = "/"
+		newUri.Fragment = "/send/"
+	}
+
+	return newUri
 }

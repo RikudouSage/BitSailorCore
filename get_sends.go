@@ -2,11 +2,8 @@ package bitwarden
 
 import (
 	"context"
-	"fmt"
 
 	clone "github.com/huandu/go-clone/generic"
-	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
-	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/types"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 	"golang.org/x/sync/errgroup"
@@ -25,11 +22,7 @@ func (receiver *vault) GetSends(ctx context.Context, session *result.Session) ([
 	for index, send := range receiver.vaultData.Sends {
 		wg.Go(func() error {
 			newSend := clone.Clone(send)
-			key, err := receiver.getSendDecryptionKey(newSend, session.Encryption.UserKey)
-			if err != nil {
-				return err
-			}
-			err = receiver.decryptStruct(ctx, newSend, key, []string{"Key"})
+			err := receiver.decryptSend(ctx, session, newSend)
 			if err != nil {
 				return err
 			}
@@ -46,13 +39,4 @@ func (receiver *vault) GetSends(ctx context.Context, session *result.Session) ([
 	}
 
 	return resultSlice.ToSlice(), nil
-}
-
-func (*vault) getSendDecryptionKey(send *result.Send, userKey dto.Key) (dto.Key, error) {
-	seed, err := crypto.DecryptBytes(send.Key, userKey)
-	if err != nil {
-		return nil, fmt.Errorf("failed decrypting seed: %w", err)
-	}
-
-	return crypto.DeriveSendKey(seed)
 }
