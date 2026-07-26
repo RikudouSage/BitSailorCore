@@ -7,7 +7,7 @@ import "C"
 import "go.chrastecky.dev/bitsailor-core/bitwarden/result"
 
 //export BitwardenLockSession
-func BitwardenLockSession(session C.SessionHandle) C.BitwardenStatus {
+func BitwardenLockSession(session C.SessionHandle) C.BitwardenResult {
 	sessionGo, err := getHandleObj[*result.Session](handle(session))
 	if err != nil {
 		setLastError(err)
