@@ -9,7 +9,6 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/samber/lo"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
@@ -53,14 +52,13 @@ func bitwardenItemSliceIntoC(items []*result.Item) C.BitwardenItemSlice {
 		return C.BitwardenItemSlice{}
 	}
 
-	converted := lo.Map(items, func(item *result.Item, _ int) C.BitwardenItem {
-		return bitwardenItemIntoC(item)
-	})
+	cItems := (*C.BitwardenItem)(C.malloc(C.size_t(len(items)) * C.size_t(unsafe.Sizeof(C.BitwardenItem{}))))
+	out := unsafe.Slice(cItems, len(items))
+	for i, item := range items {
+		out[i] = bitwardenItemIntoC(item)
+	}
 
-	cItems := (*C.BitwardenItem)(C.malloc(C.size_t(len(converted)) * C.size_t(unsafe.Sizeof(C.BitwardenItem{}))))
-	copy(unsafe.Slice(cItems, len(converted)), converted)
-
-	return C.BitwardenItemSlice{items: cItems, len: C.size_t(len(converted))}
+	return C.BitwardenItemSlice{items: cItems, len: C.size_t(len(items))}
 }
 
 func freeBitwardenItemSlice(items *C.BitwardenItemSlice) {
