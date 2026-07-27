@@ -39,3 +39,9 @@ release-lib-arm64: build-lib-arm64
 	cp cbindings/bw_*.h out/arm64/
 
 release-all: release-lib-current release-lib-arm7 release-lib-386 release-lib-arm64
+
+# aliases
+
+build-lib-armv7hl: build-lib-arm7
+build-lib-aarch64: build-lib-arm64
+build-lib-i486: build-lib-386
