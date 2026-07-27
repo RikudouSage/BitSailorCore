@@ -13,7 +13,6 @@ type Option func(bwClient *client) error
 func WithBaseURL(baseURL string) Option {
 	return func(bwClient *client) error {
 		if baseURL == "" {
-			fmt.Println("nulling all URLs")
 			bwClient.identityURL = nil
 			bwClient.apiURL = nil
 			return nil
