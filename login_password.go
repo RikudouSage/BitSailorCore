@@ -18,6 +18,7 @@ import (
 )
 
 var ErrTwoFactorRequired = fmt.Errorf("two factor authentication required")
+var ErrUnsupportedTwoFactorRequired = fmt.Errorf("unsupported two factor authentication required")
 
 func (receiver *auth) preLogin(ctx context.Context, email string) (*preLoginResponse, error) {
 	uri := new(*receiver.identityURL)
@@ -31,7 +32,7 @@ func (receiver *auth) preLogin(ctx context.Context, email string) (*preLoginResp
 	return resp, nil
 }
 
-func (receiver *auth) LoginPassword(ctx context.Context, email, password string) (*result.Session, error) {
+func (receiver *auth) LoginPassword(ctx context.Context, email, password string, twoFaCode *string) (*result.Session, error) {
 	preLogin, err := receiver.preLogin(ctx, email)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prelogin: %w", err)
@@ -57,6 +58,11 @@ func (receiver *auth) LoginPassword(ctx context.Context, email, password string)
 		DeviceIdentifier: receiver.deviceID.String(),
 		DeviceName:       internal.DeviceName,
 	}
+	if twoFaCode != nil {
+		requestData.TwoFactorToken = twoFaCode
+		requestData.TwoFactorProvider = new(0)
+		requestData.TwoFactorRemember = new(0)
+	}
 
 	req, err := http.NewRequestWithContext(
 		ctx,
@@ -75,6 +81,11 @@ func (receiver *auth) LoginPassword(ctx context.Context, email, password string)
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
 	defer internalHttp.DrainResponse(resp)
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d (%s)", resp.StatusCode, resp.Status)
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
@@ -82,8 +93,12 @@ func (receiver *auth) LoginPassword(ctx context.Context, email, password string)
 
 	var twoFaResp twoFactorErrorResponse
 	_ = json.Unmarshal(body, &twoFaResp)
-	if len(twoFaResp.TwoFactorProviders) > 0 {
-		return nil, ErrTwoFactorRequired
+	if len(twoFaResp.TwoFactorProviders2) > 0 {
+		if _, ok := twoFaResp.TwoFactorProviders2["0"]; ok {
+			return nil, ErrTwoFactorRequired
+		}
+
+		return nil, ErrUnsupportedTwoFactorRequired
 	}
 
 	var token tokenResponse

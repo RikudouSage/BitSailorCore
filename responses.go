@@ -10,10 +10,10 @@ type preLoginResponse struct {
 }
 
 type twoFactorErrorResponse struct {
-	Error                   string   `json:"error"`
-	ErrorDescription        string   `json:"error_description"`
-	TwoFactorProviders      []string `json:"TwoFactorProviders"`
-	SsoEmail2faSessionToken string   `json:"SsoEmail2faSessionToken"`
+	Error                   string         `json:"error"`
+	ErrorDescription        string         `json:"error_description"`
+	TwoFactorProviders2     map[string]any `json:"TwoFactorProviders2"`
+	SsoEmail2faSessionToken string         `json:"SsoEmail2faSessionToken"`
 }
 
 type tokenResponse struct {

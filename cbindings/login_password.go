@@ -9,7 +9,7 @@ import "C"
 func BitwardenLoginPassword(
 	client C.ClientHandle,
 	ctx C.ContextHandle,
-	email, password *C.char,
+	email, password, twoFaCode *C.char,
 	outHandle *C.SessionHandle,
 ) C.BitwardenResult {
 	if outHandle == nil {
@@ -25,8 +25,9 @@ func BitwardenLoginPassword(
 
 	emailStr := C.GoString(email)
 	passwordStr := C.GoString(password)
+	twoFaCodeStr := goStringFromCPtr(twoFaCode)
 
-	session, err := clientGo.Auth().LoginPassword(ctxGo, emailStr, passwordStr)
+	session, err := clientGo.Auth().LoginPassword(ctxGo, emailStr, passwordStr, twoFaCodeStr)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError
