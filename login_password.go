@@ -82,10 +82,6 @@ func (receiver *auth) LoginPassword(ctx context.Context, email, password string,
 	}
 	defer internalHttp.DrainResponse(resp)
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d (%s)", resp.StatusCode, resp.Status)
-	}
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
@@ -99,6 +95,10 @@ func (receiver *auth) LoginPassword(ctx context.Context, email, password string,
 		}
 
 		return nil, ErrUnsupportedTwoFactorRequired
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d (%s)", resp.StatusCode, resp.Status)
 	}
 
 	var token tokenResponse
