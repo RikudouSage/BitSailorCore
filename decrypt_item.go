@@ -16,6 +16,8 @@ import (
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
+var basePackagePath = reflect.TypeFor[vault]().PkgPath()
+
 func (receiver *vault) DecryptItem(ctx context.Context, session *result.Session, item *result.Item) (*result.Item, error) {
 	key, err := receiver.getItemDecryptionKey(session, item)
 	if err != nil {
@@ -110,7 +112,7 @@ func (receiver *vault) decryptStruct(ctx context.Context, target any, key dto.Ke
 
 			value.SetString(newVal)
 		}
-		if field.Type.Kind() == reflect.Pointer && field.Type.Elem().Kind() == reflect.Struct {
+		if field.Type.Kind() == reflect.Pointer && field.Type.Elem().Kind() == reflect.Struct && isBasePackageType(field.Type.Elem()) {
 			value := reflect.ValueOf(target).Elem().FieldByName(field.Name)
 			if value.IsNil() {
 				continue
@@ -123,7 +125,7 @@ func (receiver *vault) decryptStruct(ctx context.Context, target any, key dto.Ke
 			value := reflect.ValueOf(target).Elem().FieldByName(field.Name)
 			for i := range value.Len() {
 				elem := value.Index(i)
-				if elem.Kind() == reflect.Pointer && elem.Elem().Kind() == reflect.Struct {
+				if elem.Kind() == reflect.Pointer && elem.Elem().Kind() == reflect.Struct && isBasePackageType(elem.Elem().Type()) {
 					err := receiver.decryptStruct(ctx, elem.Elem().Addr().Interface(), key, ignoreFields)
 					if err != nil {
 						return err
@@ -134,6 +136,10 @@ func (receiver *vault) decryptStruct(ctx context.Context, target any, key dto.Ke
 	}
 
 	return nil
+}
+
+func isBasePackageType(typ reflect.Type) bool {
+	return typ.PkgPath() == basePackagePath || strings.HasPrefix(typ.PkgPath(), basePackagePath+"/")
 }
 
 func (receiver *vault) getItemDecryptionKey(session *result.Session, item *result.Item) (dto.Key, error) {
