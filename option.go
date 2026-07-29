@@ -22,7 +22,7 @@ var specialURLs = []urlConfig{
 		apiURL:      lo.Must(url.Parse("https://api.bitwarden.com")),
 	},
 	{
-		baseURL:     lo.Must(url.Parse("https://api.bitwarden.com")),
+		baseURL:     lo.Must(url.Parse("https://bitwarden.eu")),
 		identityURL: lo.Must(url.Parse("https://vault.bitwarden.eu")),
 		apiURL:      lo.Must(url.Parse("https://api.bitwarden.eu")),
 	},
