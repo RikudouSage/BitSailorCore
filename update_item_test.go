@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
@@ -79,6 +80,7 @@ func TestUpdateItemUpdatesRemoteItemAndReplacesVaultData(t *testing.T) {
 	vault := &vault{
 		baseURL:    baseURL,
 		httpClient: server.Client(),
+		auth:       &auth{now: time.Now},
 		vaultData: &result.VaultData{
 			Items: []*result.Item{
 				{ID: keepID},
@@ -89,6 +91,7 @@ func TestUpdateItemUpdatesRemoteItemAndReplacesVaultData(t *testing.T) {
 	session := &result.Session{
 		Auth: &result.AuthData{
 			AccessToken: "access-token",
+			ExpiresAt:   time.Now().Add(time.Hour),
 			TokenType:   "Bearer",
 		},
 		Encryption: &result.EncryptionData{

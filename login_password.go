@@ -21,8 +21,7 @@ var ErrTwoFactorRequired = fmt.Errorf("two factor authentication required")
 var ErrUnsupportedTwoFactorRequired = fmt.Errorf("unsupported two factor authentication required")
 
 func (receiver *auth) preLogin(ctx context.Context, email string) (*preLoginResponse, error) {
-	uri := new(*receiver.identityURL)
-	uri.Path = fmt.Sprintf("/identity/accounts/prelogin")
+	uri := urlWithPath(receiver.identityURL, "/identity/accounts/prelogin")
 
 	resp, err := request[*preLoginResponse](ctx, receiver.httpClient, http.MethodPost, uri, &preLoginRequest{Email: email}, nil)
 	if err != nil {

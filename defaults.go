@@ -10,14 +10,20 @@ import (
 )
 
 func (receiver *client) provideDefaultsAndValidate() error {
+	const defaultURL = "https://bitwarden.com"
+	var normalized *urlConfig
+	if receiver.identityURL == nil || receiver.apiURL == nil {
+		normalized = normalizeBaseURL(lo.Must(url.Parse(defaultURL)))
+	}
+
 	if receiver.httpClient == nil {
 		receiver.httpClient = http.DefaultClient
 	}
 	if receiver.identityURL == nil {
-		receiver.identityURL = lo.Must(url.Parse("https://vault.bitwarden.com"))
+		receiver.identityURL = normalized.identityURL
 	}
 	if receiver.apiURL == nil {
-		receiver.apiURL = lo.Must(url.Parse("https://api.bitwarden.com"))
+		receiver.apiURL = normalized.apiURL
 	}
 
 	if receiver.deviceID == uuid.Nil {
