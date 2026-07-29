@@ -32,8 +32,7 @@ func (receiver *vault) CreateSend(ctx context.Context, session *result.Session, 
 }
 
 func (receiver *vault) createTextSend(ctx context.Context, session *result.Session, item *result.Send) error {
-	targetUri := new(*receiver.baseURL)
-	targetUri.Path = "/sends"
+	targetUri := urlWithPath(receiver.baseURL, "/sends")
 
 	if err := receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err
@@ -61,8 +60,7 @@ func (receiver *vault) createFileSend(ctx context.Context, session *result.Sessi
 		SendResponse   *result.Send `json:"sendResponse"`
 	}
 
-	targetUri := new(*receiver.baseURL)
-	targetUri.Path = "/sends/file/v2"
+	targetUri := urlWithPath(receiver.baseURL, "/sends/file/v2")
 
 	if enc, ok := item.InputFile.(*crypto.File); ok {
 		defer enc.Close()
@@ -128,8 +126,7 @@ func (receiver *vault) uploadSendFileDirect(
 		return err
 	}
 
-	uri := new(*receiver.baseURL)
-	uri.Path = fmt.Sprintf("/sends/%s/file/%s", metadata.ID, metadata.File.ID)
+	uri := urlWithPath(receiver.baseURL, fmt.Sprintf("/sends/%s/file/%s", metadata.ID, metadata.File.ID))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, uri.String(), &body)
 	if err != nil {

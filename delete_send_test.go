@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
@@ -40,6 +41,7 @@ func TestDeleteSendDeletesRemoteSendAndRemovesItFromVaultData(t *testing.T) {
 	vault := &vault{
 		baseURL:    baseURL,
 		httpClient: server.Client(),
+		auth:       &auth{now: time.Now},
 		vaultData: &result.VaultData{
 			Sends: []*result.Send{
 				{ID: keepID},
@@ -50,6 +52,7 @@ func TestDeleteSendDeletesRemoteSendAndRemovesItFromVaultData(t *testing.T) {
 	session := &result.Session{
 		Auth: &result.AuthData{
 			AccessToken: "access-token",
+			ExpiresAt:   time.Now().Add(time.Hour),
 			TokenType:   "Bearer",
 		},
 	}
@@ -63,5 +66,45 @@ func TestDeleteSendDeletesRemoteSendAndRemovesItFromVaultData(t *testing.T) {
 	}
 	if vault.vaultData.Sends[0].ID != keepID {
 		t.Fatalf("remaining send ID = %s, want %s", vault.vaultData.Sends[0].ID, keepID)
+	}
+}
+
+func TestDeleteSendPreservesBaseURLPath(t *testing.T) {
+	t.Parallel()
+
+	deleteID := uuid.MustParse("11111111-1111-1111-1111-111111111111")
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/bitwarden/sends/"+deleteID.String() {
+			t.Fatalf("path = %s, want /bitwarden/sends/%s", r.URL.Path, deleteID)
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	baseURL, err := url.Parse(server.URL + "/bitwarden")
+	if err != nil {
+		t.Fatalf("url.Parse() returned error: %v", err)
+	}
+
+	vault := &vault{
+		baseURL:    baseURL,
+		httpClient: server.Client(),
+		auth:       &auth{now: time.Now},
+		vaultData: &result.VaultData{
+			Sends: []*result.Send{{ID: deleteID}},
+		},
+	}
+	session := &result.Session{
+		Auth: &result.AuthData{
+			AccessToken: "access-token",
+			ExpiresAt:   time.Now().Add(time.Hour),
+			TokenType:   "Bearer",
+		},
+	}
+
+	if err = vault.DeleteSend(context.Background(), session, deleteID); err != nil {
+		t.Fatalf("DeleteSend() returned error: %v", err)
 	}
 }

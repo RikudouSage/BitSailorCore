@@ -15,8 +15,7 @@ func (receiver *vault) DeleteSend(ctx context.Context, session *result.Session, 
 		return ErrMissingVault
 	}
 
-	targetUri := new(*receiver.baseURL)
-	targetUri.Path = fmt.Sprintf("/sends/%s", sendID)
+	targetUri := urlWithPath(receiver.baseURL, fmt.Sprintf("/sends/%s", sendID))
 
 	if err := receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err

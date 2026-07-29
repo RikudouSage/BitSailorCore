@@ -39,8 +39,5 @@ func newAuth(
 }
 
 func (receiver *auth) getTokenURL() *url.URL {
-	tokenURL := new(*receiver.identityURL)
-	tokenURL.Path = "/identity/connect/token"
-
-	return tokenURL
+	return urlWithPath(receiver.identityURL, "/identity/connect/token")
 }
