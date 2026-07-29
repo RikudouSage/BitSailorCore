@@ -6,7 +6,41 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 )
+
+type urlConfig struct {
+	baseURL     *url.URL
+	identityURL *url.URL
+	apiURL      *url.URL
+}
+
+var specialURLs = []urlConfig{
+	{
+		baseURL:     lo.Must(url.Parse("https://bitwarden.com")),
+		identityURL: lo.Must(url.Parse("https://vault.bitwarden.com")),
+		apiURL:      lo.Must(url.Parse("https://api.bitwarden.com")),
+	},
+	{
+		baseURL:     lo.Must(url.Parse("https://api.bitwarden.com")),
+		identityURL: lo.Must(url.Parse("https://vault.bitwarden.eu")),
+		apiURL:      lo.Must(url.Parse("https://api.bitwarden.eu")),
+	},
+}
+
+func normalizeBaseURL(baseURL *url.URL) *urlConfig {
+	for _, specialURL := range specialURLs {
+		if specialURL.baseURL.String() == baseURL.String() {
+			return &specialURL
+		}
+	}
+
+	return &urlConfig{
+		baseURL:     baseURL,
+		identityURL: baseURL,
+		apiURL:      baseURL,
+	}
+}
 
 type Option func(bwClient *client) error
 
@@ -22,8 +56,10 @@ func WithBaseURL(baseURL string) Option {
 		if err != nil {
 			return fmt.Errorf("failed parsing base url: %w", err)
 		}
-		bwClient.identityURL = parsed
-		bwClient.apiURL = parsed
+		normalized := normalizeBaseURL(parsed)
+
+		bwClient.identityURL = normalized.identityURL
+		bwClient.apiURL = normalized.apiURL
 		return nil
 	}
 }
