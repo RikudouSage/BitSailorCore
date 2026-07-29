@@ -39,7 +39,7 @@ func TestDeleteSendDeletesRemoteSendAndRemovesItFromVaultData(t *testing.T) {
 	}
 
 	vault := &vault{
-		baseURL:    baseURL,
+		apiURL:     baseURL,
 		httpClient: server.Client(),
 		auth:       &auth{now: time.Now},
 		vaultData: &result.VaultData{
@@ -89,7 +89,7 @@ func TestDeleteSendPreservesBaseURLPath(t *testing.T) {
 	}
 
 	vault := &vault{
-		baseURL:    baseURL,
+		apiURL:     baseURL,
 		httpClient: server.Client(),
 		auth:       &auth{now: time.Now},
 		vaultData: &result.VaultData{

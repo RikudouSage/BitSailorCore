@@ -18,7 +18,7 @@ func (receiver *vault) Sync(ctx context.Context, session *result.Session) (Vault
 		return nil, err
 	}
 
-	uri := urlWithPath(receiver.baseURL, "/api/sync")
+	uri := urlWithPath(receiver.apiURL, "/sync")
 
 	vaultData, err := request[*result.VaultData](
 		ctx,

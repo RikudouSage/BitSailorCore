@@ -38,7 +38,7 @@ func normalizeBaseURL(baseURL *url.URL) *urlConfig {
 	return &urlConfig{
 		baseURL:     baseURL,
 		identityURL: baseURL,
-		apiURL:      baseURL,
+		apiURL:      urlWithPath(baseURL, "/api"),
 	}
 }
 

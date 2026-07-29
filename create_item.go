@@ -30,7 +30,7 @@ func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, 
 		return fmt.Errorf("failed encrypting struct: %w", err)
 	}
 
-	targetUri := urlWithPath(receiver.baseURL, "/ciphers")
+	targetUri := urlWithPath(receiver.apiURL, "/ciphers")
 
 	if err = receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err

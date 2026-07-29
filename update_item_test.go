@@ -78,7 +78,7 @@ func TestUpdateItemUpdatesRemoteItemAndReplacesVaultData(t *testing.T) {
 	}
 
 	vault := &vault{
-		baseURL:    baseURL,
+		apiURL:     baseURL,
 		httpClient: server.Client(),
 		auth:       &auth{now: time.Now},
 		vaultData: &result.VaultData{

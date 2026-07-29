@@ -15,7 +15,7 @@ func (receiver *vault) DeleteItem(ctx context.Context, session *result.Session, 
 		return ErrMissingVault
 	}
 
-	targetUri := urlWithPath(receiver.baseURL, fmt.Sprintf("/ciphers/%s/delete", itemID))
+	targetUri := urlWithPath(receiver.apiURL, fmt.Sprintf("/ciphers/%s/delete", itemID))
 
 	if err := receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err

@@ -27,7 +27,7 @@ func (receiver *vault) UpdateItem(ctx context.Context, session *result.Session, 
 		return fmt.Errorf("failed encrypting struct: %w", err)
 	}
 
-	targetUri := urlWithPath(receiver.baseURL, fmt.Sprintf("/ciphers/%s", item.ID))
+	targetUri := urlWithPath(receiver.apiURL, fmt.Sprintf("/ciphers/%s", item.ID))
 	if err = receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err
 	}
