@@ -2,6 +2,7 @@ package main
 
 /*
 #include "bw_common.h"
+#include <stdbool.h>
 
 typedef struct {
 	const char* baseUrl;
