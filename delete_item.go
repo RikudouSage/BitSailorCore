@@ -20,7 +20,7 @@ func (receiver *vault) DeleteItem(ctx context.Context, session *result.Session, 
 	if err := receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err
 	}
-	_, err := request[any](ctx, receiver.httpClient, http.MethodPut, targetUri, nil, session)
+	_, err := request[any](ctx, receiver.httpClient, http.MethodPut, targetUri, nil, session, false)
 	if err != nil {
 		return fmt.Errorf("failed deleting item: %w", err)
 	}

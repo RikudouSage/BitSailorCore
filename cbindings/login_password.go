@@ -4,6 +4,7 @@ package main
 #include "bw_common.h"
 */
 import "C"
+import "strings"
 
 //export BitwardenLoginPassword
 func BitwardenLoginPassword(
@@ -26,6 +27,9 @@ func BitwardenLoginPassword(
 	emailStr := C.GoString(email)
 	passwordStr := C.GoString(password)
 	twoFaCodeStr := goStringFromCPtr(twoFaCode)
+	if twoFaCodeStr != nil && strings.TrimSpace(*twoFaCodeStr) == "" {
+		twoFaCodeStr = nil
+	}
 
 	session, err := clientGo.Auth().LoginPassword(ctxGo, emailStr, passwordStr, twoFaCodeStr)
 	if err != nil {

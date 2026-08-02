@@ -36,7 +36,7 @@ func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, 
 		return err
 	}
 
-	newItemEnc, err := request[*result.Item](ctx, receiver.httpClient, http.MethodPost, targetUri, resultItem, session)
+	newItemEnc, err := request[*result.Item](ctx, receiver.httpClient, http.MethodPost, targetUri, resultItem, session, false)
 	if err != nil {
 		return fmt.Errorf("failed creating the item: %w", err)
 	}

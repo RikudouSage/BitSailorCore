@@ -44,6 +44,13 @@ func normalizeBaseURL(baseURL *url.URL) *urlConfig {
 
 type Option func(bwClient *client) error
 
+func WithDebugLogsEnabled(enabled bool) Option {
+	return func(bwClient *client) error {
+		bwClient.debugLogs = enabled
+		return nil
+	}
+}
+
 func WithBaseURL(baseURL string) Option {
 	return func(bwClient *client) error {
 		if baseURL == "" {

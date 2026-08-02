@@ -11,6 +11,7 @@ typedef struct {
 	const Handle* httpClient;
 	const UUID* deviceId;
 	const bool* ignoreCerts;
+	const bool* debugLogs;
 } NewClientOptions;
 */
 import "C"
@@ -55,6 +56,9 @@ func BitwardenNewClient(outHandle *C.ClientHandle, options C.NewClientOptions) C
 	}
 	if options.deviceId != nil {
 		goOptions = append(goOptions, bitwarden.WithDeviceID(parseUUIDFromC(*options.deviceId)))
+	}
+	if options.debugLogs != nil {
+		goOptions = append(goOptions, bitwarden.WithDebugLogsEnabled(bool(*options.debugLogs)))
 	}
 
 	client, err := bitwarden.NewClient(goOptions...)

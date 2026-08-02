@@ -23,7 +23,7 @@ var ErrUnsupportedTwoFactorRequired = fmt.Errorf("unsupported two factor authent
 func (receiver *auth) preLogin(ctx context.Context, email string) (*preLoginResponse, error) {
 	uri := urlWithPath(receiver.identityURL, "/identity/accounts/prelogin")
 
-	resp, err := request[*preLoginResponse](ctx, receiver.httpClient, http.MethodPost, uri, &preLoginRequest{Email: email}, nil)
+	resp, err := request[*preLoginResponse](ctx, receiver.httpClient, http.MethodPost, uri, &preLoginRequest{Email: email}, nil, receiver.debugLogs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prelogin: %w", err)
 	}
@@ -97,6 +97,9 @@ func (receiver *auth) LoginPassword(ctx context.Context, email, password string,
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		if receiver.debugLogs {
+			return nil, fmt.Errorf("unexpected status code: %d (%s), body: %s", resp.StatusCode, resp.Status, body)
+		}
 		return nil, fmt.Errorf("unexpected status code: %d (%s)", resp.StatusCode, resp.Status)
 	}
 

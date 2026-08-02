@@ -22,6 +22,7 @@ func request[TResponse any](
 	url *url.URL,
 	body any,
 	session *result.Session,
+	debug bool,
 ) (TResponse, error) {
 	var requestBody io.Reader
 	var out TResponse
@@ -63,7 +64,11 @@ func request[TResponse any](
 	defer internalHttp.DrainResponse(resp)
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, _ = io.ReadAll(resp.Body)
+		if debug {
+			rawBody, _ := io.ReadAll(resp.Body)
+			return out, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, rawBody)
+		}
+
 		return out, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 

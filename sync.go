@@ -27,6 +27,7 @@ func (receiver *vault) Sync(ctx context.Context, session *result.Session) (Vault
 		uri,
 		nil,
 		session,
+		false,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed syncing vault: %w", err)

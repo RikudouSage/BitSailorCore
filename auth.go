@@ -22,6 +22,8 @@ type auth struct {
 	httpClient  *http.Client
 	deviceID    uuid.UUID
 
+	debugLogs bool
+
 	now func() time.Time
 }
 
@@ -29,12 +31,14 @@ func newAuth(
 	identityURL *url.URL,
 	httpClient *http.Client,
 	deviceID uuid.UUID,
+	debugLogs bool,
 ) *auth {
 	return &auth{
 		identityURL: identityURL,
 		httpClient:  httpClient,
 		deviceID:    deviceID,
 		now:         time.Now,
+		debugLogs:   debugLogs,
 	}
 }
 

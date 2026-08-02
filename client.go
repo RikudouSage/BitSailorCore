@@ -22,6 +22,8 @@ type client struct {
 	apiURL      *url.URL
 	deviceID    uuid.UUID
 
+	debugLogs bool
+
 	auth  *auth
 	vault *vault
 }
@@ -44,7 +46,7 @@ func NewClient(options ...Option) (Client, error) {
 
 func (receiver *client) Auth() Auth {
 	if receiver.auth == nil {
-		receiver.auth = newAuth(receiver.identityURL, receiver.httpClient, receiver.deviceID)
+		receiver.auth = newAuth(receiver.identityURL, receiver.httpClient, receiver.deviceID, receiver.debugLogs)
 	}
 
 	return receiver.auth
