@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"slices"
 	"sync"
 	"time"
 
 	kitlog "github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	"github.com/google/uuid"
 	"github.com/philippseith/signalr"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
@@ -435,7 +437,7 @@ func (receiver *notifications) run(
 		signalr.WithConnection(connection),
 		signalr.TransferFormat(signalr.TransferFormatBinary),
 		signalr.WithReceiver(signalReceiver),
-		signalr.Logger(kitlog.NewNopLogger(), false),
+		signalr.Logger(level.NewFilter(kitlog.NewLogfmtLogger(kitlog.NewSyncWriter(os.Stderr)), level.AllowWarn()), false),
 	)
 	if err != nil {
 		sendReady(err)
