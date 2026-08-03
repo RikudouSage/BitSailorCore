@@ -3,35 +3,15 @@
 
 #include "bw_common.h"
 
-typedef int NotificationState;
-typedef int NotificationType;
-
-typedef struct {
-    const char* contextId;
-    NotificationType notificationType;
-    const uint8_t* payload;
-    size_t payloadLen;
-} BitwardenNotification;
-
-typedef BitwardenResult (*BitwardenNotificationCallback)(void* userData, const BitwardenNotification* notification);
-
-static inline BitwardenResult bitwarden_call_notification_callback(
-    BitwardenNotificationCallback callback,
-    void* userData,
-    const BitwardenNotification* notification
-) {
-    return callback(userData, notification);
-}
-
-enum {
+typedef enum {
     BitwardenNotificationStopped = 0,
     BitwardenNotificationConnecting = 1,
     BitwardenNotificationConnected = 2,
     BitwardenNotificationReconnecting = 3,
     BitwardenNotificationFailed = 4,
-};
+} NotificationState;
 
-enum {
+typedef enum {
     BitwardenNotificationSyncCipherUpdate = 0,
     BitwardenNotificationSyncCipherCreate = 1,
     BitwardenNotificationSyncLoginDelete = 2,
@@ -60,6 +40,23 @@ enum {
     BitwardenNotificationSyncPolicy = 25,
     BitwardenNotificationAutoConfirmMember = 26,
     BitwardenNotificationPremiumStatusChanged = 27,
-};
+} NotificationType;
+
+typedef struct {
+    const char* contextId;
+    NotificationType notificationType;
+    const uint8_t* payload;
+    size_t payloadLen;
+} BitwardenNotification;
+
+typedef BitwardenResult (*BitwardenNotificationCallback)(void* userData, const BitwardenNotification* notification);
+
+static inline BitwardenResult bitwarden_call_notification_callback(
+    BitwardenNotificationCallback callback,
+    void* userData,
+    const BitwardenNotification* notification
+) {
+    return callback(userData, notification);
+}
 
 #endif
