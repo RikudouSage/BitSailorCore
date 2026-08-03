@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/helper"
 )
 
 var ErrInvalidPassphraseNumWords = errors.New("invalid passphrase word count")
@@ -130,8 +132,8 @@ func capitalizeFirstLetter(value string) string {
 }
 
 func passphraseWordList() []string {
-	words := make([]string, 0, len(effLongWordList))
-	for _, word := range effLongWordList {
+	words := make([]string, 0, len(helper.EffLongWordList))
+	for _, word := range helper.EffLongWordList {
 		if strings.Contains(word, "-") {
 			continue
 		}

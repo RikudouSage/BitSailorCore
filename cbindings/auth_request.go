@@ -4,12 +4,30 @@ package main
 #include "bw_common.h"
 */
 import "C"
-import "go.chrastecky.dev/bitsailor-core/bitwarden/result"
+import (
+	"strings"
+
+	"go.chrastecky.dev/bitsailor-core/bitwarden"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
+)
 
 //export BitwardenFetchAuthRequest
-func BitwardenFetchAuthRequest(client C.ClientHandle, ctx C.ContextHandle, session C.SessionHandle, id C.UUID, out *C.Handle) C.BitwardenResult {
-	if out == nil {
-		setLastError(nullPointerError("out"))
+func BitwardenFetchAuthRequest(
+	client C.ClientHandle,
+	vault C.VaultHandle,
+	ctx C.ContextHandle,
+	session C.SessionHandle,
+	id C.UUID,
+	requestOut *C.Handle,
+	phraseOut **C.char,
+) C.BitwardenResult {
+	if requestOut == nil {
+		setLastError(nullPointerError("requestOut"))
+		return BitwardenError
+	}
+	if phraseOut == nil {
+		setLastError(nullPointerError("phraseOut"))
 		return BitwardenError
 	}
 
@@ -24,6 +42,11 @@ func BitwardenFetchAuthRequest(client C.ClientHandle, ctx C.ContextHandle, sessi
 		setLastError(err)
 		return BitwardenError
 	}
+	vaultGo, err := getHandleObj[bitwarden.Vault](handle(vault))
+	if err != nil {
+		setLastError(err)
+		return BitwardenError
+	}
 
 	idGo := parseUUIDFromC(id)
 
@@ -33,8 +56,16 @@ func BitwardenFetchAuthRequest(client C.ClientHandle, ctx C.ContextHandle, sessi
 		return BitwardenError
 	}
 
+	fingerprint, err := crypto.FingerprintPhrase(vaultGo.GetVaultData().Profile.Email, authRequest.PublicKey)
+	if err != nil {
+		setLastError(err)
+		return BitwardenError
+	}
+
 	handleID := registerHandle(authRequest)
-	*out = C.Handle(handleID)
+	*requestOut = C.Handle(handleID)
+	*phraseOut = C.CString(strings.Join(fingerprint, "-"))
+
 	clearLastError()
 	return BitwardenSuccess
 }

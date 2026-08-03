@@ -1,7 +1,7 @@
-package bitwarden
+package helper
 
 // EFF Long Wordlist from https://www.eff.org/dice
-var effLongWordList = []string{
+var EffLongWordList = []string{
 	"abacus",
 	"abdomen",
 	"abdominal",
