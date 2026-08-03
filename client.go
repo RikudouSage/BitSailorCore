@@ -74,6 +74,7 @@ func (receiver *client) Notifications() Notifications {
 			receiver.notificationsURL,
 			receiver.httpClient,
 			receiver.deviceID,
+			receiver.Auth().(*auth),
 		)
 	}
 

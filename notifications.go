@@ -106,6 +106,8 @@ type notifications struct {
 	httpClient       *http.Client
 	deviceID         uuid.UUID
 
+	auth *auth
+
 	mutex    sync.Mutex
 	state    NotificationState
 	lastErr  error
@@ -126,6 +128,7 @@ func newNotifications(
 	notificationsURL *url.URL,
 	httpClient *http.Client,
 	deviceID uuid.UUID,
+	auth *auth,
 ) *notifications {
 	done := make(chan error, 1)
 	close(done)
@@ -137,6 +140,7 @@ func newNotifications(
 		handlers:         make(map[NotificationType][]handlerFuncHandle),
 		now:              time.Now,
 		done:             done,
+		auth:             auth,
 	}
 }
 
@@ -144,8 +148,8 @@ func (receiver *notifications) Start(ctx context.Context, session *result.Sessio
 	if session == nil || session.Auth == nil || session.Auth.AccessToken == "" {
 		return errors.New("notifications require an authenticated session")
 	}
-	if session.Auth.ExpiresAt.Before(receiver.now()) {
-		return ErrExpiredToken
+	if err := receiver.auth.refreshIfNeeded(ctx, session); err != nil {
+		return err
 	}
 
 	runCtx, cancel := context.WithCancel(context.Background())
