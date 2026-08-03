@@ -1,12 +1,15 @@
 package bitwarden
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 
 	"github.com/google/uuid"
 )
+
+var ErrLockedSession = errors.New("this operation cannot be done on locked session")
 
 type Client interface {
 	Auth() Auth
@@ -49,7 +52,13 @@ func NewClient(options ...Option) (Client, error) {
 
 func (receiver *client) Auth() Auth {
 	if receiver.auth == nil {
-		receiver.auth = newAuth(receiver.identityURL, receiver.httpClient, receiver.deviceID, receiver.debugLogs)
+		receiver.auth = newAuth(
+			receiver.identityURL,
+			receiver.apiURL,
+			receiver.httpClient,
+			receiver.deviceID,
+			receiver.debugLogs,
+		)
 	}
 
 	return receiver.auth

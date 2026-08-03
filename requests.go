@@ -1,5 +1,7 @@
 package bitwarden
 
+import "github.com/google/uuid"
+
 type preLoginRequest struct {
 	Email string `json:"email"`
 }
@@ -38,4 +40,11 @@ type refreshLoginRequest struct {
 	GrantType    string `url:"grant_type"`
 	ClientID     string `url:"client_id"`
 	RefreshToken string `url:"refresh_token"`
+}
+
+type authRequestUpdateRequest struct {
+	Key                *string   `json:"key,omitempty"`
+	MasterPasswordHash *string   `json:"masterPasswordHash,omitempty"`
+	DeviceIdentifier   uuid.UUID `json:"deviceIdentifier"`
+	RequestApproved    bool      `json:"requestApproved"`
 }

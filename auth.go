@@ -15,10 +15,14 @@ type Auth interface {
 	LoginApiKey(ctx context.Context, clientID, clientSecret string) (*result.Session, error)
 	RefreshToken(ctx context.Context, session *result.Session) error
 	UnlockSession(ctx context.Context, session *result.Session, email, password string) error
+
+	FetchAuthRequest(ctx context.Context, session *result.Session, id uuid.UUID) (*result.AuthRequest, error)
+	RespondToAuthRequest(ctx context.Context, session *result.Session, request *result.AuthRequest, approved bool) error
 }
 
 type auth struct {
 	identityURL *url.URL
+	apiURL      *url.URL
 	httpClient  *http.Client
 	deviceID    uuid.UUID
 
@@ -29,12 +33,14 @@ type auth struct {
 
 func newAuth(
 	identityURL *url.URL,
+	apiURL *url.URL,
 	httpClient *http.Client,
 	deviceID uuid.UUID,
 	debugLogs bool,
 ) *auth {
 	return &auth{
 		identityURL: identityURL,
+		apiURL:      apiURL,
 		httpClient:  httpClient,
 		deviceID:    deviceID,
 		now:         time.Now,
