@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/philippseith/signalr"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
@@ -37,10 +38,54 @@ const (
 	NotificationFailed
 )
 
+const (
+	NotificationTypeSyncCipherUpdate NotificationType = iota
+	NotificationTypeSyncCipherCreate
+	NotificationTypeSyncLoginDelete
+	NotificationTypeSyncFolderDelete
+	NotificationTypeSyncCiphers
+	NotificationTypeSyncVault
+	NotificationTypeSyncOrgKeys
+	NotificationTypeSyncFolderCreate
+	NotificationTypeSyncFolderUpdate
+	NotificationTypeSyncCipherDelete
+	NotificationTypeSyncSettings
+	NotificationTypeLogOut
+	NotificationSyncSendCreate
+	NotificationSyncSendUpdate
+	NotificationSyncSendDelete
+	NotificationAuthRequest
+	NotificationAuthRequestResponse
+	NotificationSyncOrganizations
+	NotificationSyncOrganizationStatusChanged
+	NotificationSyncOrganizationCollectionSettingChanged
+	NotificationNotification
+	NotificationNotificationStatus
+	NotificationRefreshSecurityTasks
+	NotificationOrganizationBankAccountVerified
+	NotificationProviderBankAccountVerified
+	NotificationSyncPolicy
+	NotificationAutoConfirmMember
+	NotificationPremiumStatusChanged
+)
+
 type Notification struct {
 	ContextID string
 	Type      NotificationType
 	Payload   json.RawMessage
+}
+
+type signalRReceiver struct {
+	onMessage   func(data any)
+	onHeartbeat func()
+}
+
+func (receiver *signalRReceiver) ReceiveMessage(data any) {
+	receiver.onMessage(data)
+}
+
+func (receiver *signalRReceiver) Heartbeat() {
+	receiver.onHeartbeat()
 }
 
 type Notifications interface {
@@ -126,15 +171,15 @@ func (receiver *notifications) Start(ctx context.Context, session *result.Sessio
 	go func() {
 		err := receiver.run(runCtx, session, ready)
 
-		receiver.mutex.Lock()
-		if receiver.runID == runID {
-			if receiver.state != NotificationFailed {
-				receiver.state = NotificationStopped
+		receiver.runLocked(func() {
+			if receiver.runID == runID {
+				if receiver.state != NotificationFailed {
+					receiver.state = NotificationStopped
+				}
+				receiver.cancel = nil
+				receiver.lastErr = err
 			}
-			receiver.cancel = nil
-			receiver.lastErr = err
-		}
-		receiver.mutex.Unlock()
+		})
 
 		done <- err
 		close(done)
@@ -145,33 +190,33 @@ func (receiver *notifications) Start(ctx context.Context, session *result.Sessio
 		if err != nil {
 			cancel()
 
-			receiver.mutex.Lock()
-			if receiver.runID == runID {
-				receiver.state = NotificationFailed
-				receiver.lastErr = err
-			}
-			receiver.mutex.Unlock()
+			receiver.runLocked(func() {
+				if receiver.runID == runID {
+					receiver.state = NotificationFailed
+					receiver.lastErr = err
+				}
+			})
 
 			return err
 		}
 
-		receiver.mutex.Lock()
-		if receiver.runID == runID {
-			receiver.state = NotificationConnected
-			receiver.lastSeen = receiver.now()
-		}
-		receiver.mutex.Unlock()
+		receiver.runLocked(func() {
+			if receiver.runID == runID {
+				receiver.state = NotificationConnected
+				receiver.lastSeen = receiver.now()
+			}
+		})
 
 		return nil
 	case <-ctx.Done():
 		cancel()
 
-		receiver.mutex.Lock()
-		if receiver.runID == runID {
-			receiver.state = NotificationFailed
-			receiver.lastErr = ctx.Err()
-		}
-		receiver.mutex.Unlock()
+		receiver.runLocked(func() {
+			if receiver.runID == runID {
+				receiver.state = NotificationFailed
+				receiver.lastErr = ctx.Err()
+			}
+		})
 
 		return ctx.Err()
 	}
@@ -195,22 +240,22 @@ func (receiver *notifications) Stop(ctx context.Context) error {
 
 	select {
 	case err := <-done:
-		receiver.mutex.Lock()
-		if receiver.runID == runID {
-			receiver.state = NotificationStopped
-		}
-		receiver.mutex.Unlock()
+		receiver.runLocked(func() {
+			if receiver.runID == runID {
+				receiver.state = NotificationStopped
+			}
+		})
 		if errors.Is(err, context.Canceled) {
 			return nil
 		}
 
 		return err
 	case <-ctx.Done():
-		receiver.mutex.Lock()
-		if receiver.runID == runID {
-			receiver.lastErr = ctx.Err()
-		}
-		receiver.mutex.Unlock()
+		receiver.runLocked(func() {
+			if receiver.runID == runID {
+				receiver.lastErr = ctx.Err()
+			}
+		})
 
 		return ctx.Err()
 	}
@@ -229,10 +274,13 @@ func (receiver *notifications) Reconnect(ctx context.Context, session *result.Se
 }
 
 func (receiver *notifications) EnsureConnected(ctx context.Context, session *result.Session) error {
-	receiver.mutex.Lock()
-	state := receiver.state
-	hasActiveRun := receiver.cancel != nil
-	receiver.mutex.Unlock()
+	var state NotificationState
+	var hasActiveRun bool
+
+	receiver.runLocked(func() {
+		state = receiver.state
+		hasActiveRun = receiver.cancel != nil
+	})
 
 	switch state {
 	case NotificationConnected:
@@ -327,8 +375,92 @@ func (receiver *notifications) run(
 		ready <- err
 	}
 
-	sendReady(errors.New("notifications run is not implemented"))
-	return errors.New("notifications run is not implemented")
+	hubURL := urlWithPath(receiver.notificationsURL, "/hub")
+	if hubURL.Scheme == "https" {
+		hubURL.Scheme = "wss"
+	} else {
+		hubURL.Scheme = "ws"
+	}
+
+	query := hubURL.Query()
+	query.Set("access_token", session.Auth.AccessToken)
+	hubURL.RawQuery = query.Encode()
+
+	signalReceiver := &signalRReceiver{
+		onMessage: func(data any) {
+			notification, err := receiver.parseNotification(data)
+			if err != nil {
+				receiver.runLocked(func() {
+					receiver.lastErr = err
+				})
+				return
+			}
+
+			receiver.runLocked(func() {
+				receiver.lastSeen = receiver.now()
+			})
+
+			if err := receiver.handleNotification(ctx, notification); err != nil {
+				receiver.runLocked(func() {
+					receiver.lastErr = err
+				})
+			}
+		},
+		onHeartbeat: func() {
+			receiver.runLocked(func() {
+				receiver.lastSeen = receiver.now()
+			})
+		},
+	}
+
+	headers := func() http.Header {
+		header := http.Header{}
+		header.Set("Authorization", fmt.Sprintf("%s %s", session.Auth.TokenType, session.Auth.AccessToken))
+		return header
+	}
+
+	connection, err := signalr.NewWebSocketConnection(ctx, hubURL, "", headers())
+	if err != nil {
+		sendReady(err)
+		return err
+	}
+
+	signalClient, err := signalr.NewClient(
+		ctx,
+		signalr.WithConnection(connection),
+		signalr.TransferFormat(signalr.TransferFormatBinary),
+		signalr.WithReceiver(signalReceiver),
+	)
+	if err != nil {
+		sendReady(err)
+		return err
+	}
+
+	signalClient.Start()
+	defer signalClient.Stop()
+
+	select {
+	case err := <-signalClient.WaitForState(ctx, signalr.ClientConnected):
+		if err != nil {
+			sendReady(err)
+			return err
+		}
+		sendReady(nil)
+	case <-ctx.Done():
+		sendReady(ctx.Err())
+		return ctx.Err()
+	}
+
+	select {
+	case err := <-signalClient.WaitForState(ctx, signalr.ClientClosed):
+		if err != nil {
+			return err
+		}
+
+		return signalClient.Err()
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 func (receiver *notifications) handleNotification(ctx context.Context, notification *Notification) error {
@@ -343,4 +475,67 @@ func (receiver *notifications) handleNotification(ctx context.Context, notificat
 	}
 
 	return nil
+}
+
+func (receiver *notifications) parseNotification(data any) (*Notification, error) {
+	data = normalizeJSONValue(data)
+
+	raw, err := json.Marshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed encoding notification: %w", err)
+	}
+
+	var wire struct {
+		ContextID string           `json:"ContextId"`
+		Type      NotificationType `json:"Type"`
+		Payload   json.RawMessage  `json:"Payload"`
+	}
+	if err := json.Unmarshal(raw, &wire); err != nil {
+		return nil, fmt.Errorf("failed decoding notification: %w", err)
+	}
+
+	payload := wire.Payload
+	if len(payload) > 0 && payload[0] == '"' {
+		var payloadString string
+		if err := json.Unmarshal(payload, &payloadString); err == nil {
+			payload = json.RawMessage(payloadString)
+		}
+	}
+
+	return &Notification{
+		ContextID: wire.ContextID,
+		Type:      wire.Type,
+		Payload:   payload,
+	}, nil
+}
+
+func normalizeJSONValue(value any) any {
+	switch typedValue := value.(type) {
+	case map[string]any:
+		normalized := make(map[string]any, len(typedValue))
+		for key, value := range typedValue {
+			normalized[key] = normalizeJSONValue(value)
+		}
+		return normalized
+	case map[any]any:
+		normalized := make(map[string]any, len(typedValue))
+		for key, value := range typedValue {
+			normalized[fmt.Sprint(key)] = normalizeJSONValue(value)
+		}
+		return normalized
+	case []any:
+		for index, value := range typedValue {
+			typedValue[index] = normalizeJSONValue(value)
+		}
+		return typedValue
+	default:
+		return value
+	}
+}
+
+func (receiver *notifications) runLocked(callback func()) {
+	receiver.mutex.Lock()
+	defer receiver.mutex.Unlock()
+
+	callback()
 }
