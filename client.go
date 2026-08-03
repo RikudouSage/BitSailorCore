@@ -11,21 +11,24 @@ import (
 type Client interface {
 	Auth() Auth
 	Vault() Vault
+	Notifications() Notifications
 
 	GeneratePassword(request *PasswordGeneratorRequest) (string, error)
 	GeneratePassphrase(request *PassphraseGeneratorRequest) (string, error)
 }
 
 type client struct {
-	httpClient  *http.Client
-	identityURL *url.URL
-	apiURL      *url.URL
-	deviceID    uuid.UUID
+	httpClient       *http.Client
+	identityURL      *url.URL
+	apiURL           *url.URL
+	notificationsURL *url.URL
+	deviceID         uuid.UUID
 
 	debugLogs bool
 
-	auth  *auth
-	vault *vault
+	auth          *auth
+	vault         *vault
+	notifications *notifications
 }
 
 func NewClient(options ...Option) (Client, error) {
@@ -63,4 +66,16 @@ func (receiver *client) Vault() Vault {
 	}
 
 	return receiver.vault
+}
+
+func (receiver *client) Notifications() Notifications {
+	if receiver.notifications == nil {
+		receiver.notifications = newNotifications(
+			receiver.notificationsURL,
+			receiver.httpClient,
+			receiver.deviceID,
+		)
+	}
+
+	return receiver.notifications
 }
