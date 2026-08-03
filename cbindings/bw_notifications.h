@@ -9,7 +9,7 @@ typedef enum {
     BitwardenNotificationConnected = 2,
     BitwardenNotificationReconnecting = 3,
     BitwardenNotificationFailed = 4,
-} NotificationState;
+} BitwardenNotificationState;
 
 typedef enum {
     BitwardenNotificationSyncCipherUpdate = 0,
@@ -40,11 +40,11 @@ typedef enum {
     BitwardenNotificationSyncPolicy = 25,
     BitwardenNotificationAutoConfirmMember = 26,
     BitwardenNotificationPremiumStatusChanged = 27,
-} NotificationType;
+} BitwardenNotificationType;
 
 typedef struct {
     const char* contextId;
-    NotificationType notificationType;
+    BitwardenNotificationType notificationType;
     const uint8_t* payload;
     size_t payloadLen;
 } BitwardenNotification;

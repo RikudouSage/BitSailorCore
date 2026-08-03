@@ -98,7 +98,7 @@ func BitwardenEnsureNotificationsConnected(client C.ClientHandle, ctx C.ContextH
 }
 
 //export BitwardenGetNotificationsState
-func BitwardenGetNotificationsState(client C.ClientHandle, outState *C.NotificationState) C.BitwardenResult {
+func BitwardenGetNotificationsState(client C.ClientHandle, outState *C.BitwardenNotificationState) C.BitwardenResult {
 	if outState == nil {
 		setLastError(nullPointerError("outState"))
 		return BitwardenError
@@ -110,7 +110,7 @@ func BitwardenGetNotificationsState(client C.ClientHandle, outState *C.Notificat
 		return BitwardenError
 	}
 
-	*outState = C.NotificationState(clientGo.Notifications().State())
+	*outState = C.BitwardenNotificationState(clientGo.Notifications().State())
 	clearLastError()
 	return BitwardenSuccess
 }
@@ -166,7 +166,7 @@ func BitwardenGetNotificationsLastError(client C.ClientHandle, out **C.char) C.B
 //export BitwardenAddNotificationHandler
 func BitwardenAddNotificationHandler(
 	client C.ClientHandle,
-	kind C.NotificationType,
+	kind C.BitwardenNotificationType,
 	callback C.BitwardenNotificationCallback,
 	userData unsafe.Pointer,
 	outSubscription *C.NotificationSubscriptionHandle,
@@ -200,7 +200,7 @@ func BitwardenAddNotificationHandler(
 
 			cNotification := C.BitwardenNotification{
 				contextId:        contextID,
-				notificationType: C.NotificationType(notification.Type),
+				notificationType: C.BitwardenNotificationType(notification.Type),
 				payload:          payload,
 				payloadLen:       C.size_t(len(notification.Payload)),
 			}
