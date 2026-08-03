@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	kitlog "github.com/go-kit/log"
 	"github.com/google/uuid"
 	"github.com/philippseith/signalr"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
@@ -434,6 +435,7 @@ func (receiver *notifications) run(
 		signalr.WithConnection(connection),
 		signalr.TransferFormat(signalr.TransferFormatBinary),
 		signalr.WithReceiver(signalReceiver),
+		signalr.Logger(kitlog.NewNopLogger(), false),
 	)
 	if err != nil {
 		sendReady(err)
