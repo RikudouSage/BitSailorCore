@@ -10,6 +10,7 @@ typedef Handle ContextHandle;
 typedef Handle ClientHandle;
 typedef Handle SessionHandle;
 typedef Handle VaultHandle;
+typedef Handle NotificationSubscriptionHandle;
 typedef struct {
     uint8_t bytes[16];
 } UUID;

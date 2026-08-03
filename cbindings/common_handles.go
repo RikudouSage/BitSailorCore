@@ -50,3 +50,22 @@ func getCommonAuthHandles(
 
 	return
 }
+
+func getCommonNotificationHandles(
+	client C.ClientHandle,
+	ctx C.ContextHandle,
+	session C.SessionHandle,
+) (notificationsGo bitwarden.Notifications, ctxGo context.Context, sessionGo *result.Session, err error) {
+	clientGo, ctxGo, err := getCommonAuthHandles(client, ctx)
+	if err != nil {
+		return
+	}
+
+	sessionGo, err = getHandleObj[*result.Session](handle(session))
+	if err != nil {
+		return
+	}
+
+	notificationsGo = clientGo.Notifications()
+	return
+}
