@@ -10,21 +10,24 @@ import (
 )
 
 type urlConfig struct {
-	baseURL     *url.URL
-	identityURL *url.URL
-	apiURL      *url.URL
+	baseURL          *url.URL
+	identityURL      *url.URL
+	apiURL           *url.URL
+	notificationsURL *url.URL
 }
 
 var specialURLs = []urlConfig{
 	{
-		baseURL:     lo.Must(url.Parse("https://bitwarden.com")),
-		identityURL: lo.Must(url.Parse("https://vault.bitwarden.com")),
-		apiURL:      lo.Must(url.Parse("https://api.bitwarden.com")),
+		baseURL:          lo.Must(url.Parse("https://bitwarden.com")),
+		identityURL:      lo.Must(url.Parse("https://vault.bitwarden.com")),
+		apiURL:           lo.Must(url.Parse("https://api.bitwarden.com")),
+		notificationsURL: lo.Must(url.Parse("https://notifications.bitwarden.com")),
 	},
 	{
-		baseURL:     lo.Must(url.Parse("https://bitwarden.eu")),
-		identityURL: lo.Must(url.Parse("https://vault.bitwarden.eu")),
-		apiURL:      lo.Must(url.Parse("https://api.bitwarden.eu")),
+		baseURL:          lo.Must(url.Parse("https://bitwarden.eu")),
+		identityURL:      lo.Must(url.Parse("https://vault.bitwarden.eu")),
+		apiURL:           lo.Must(url.Parse("https://api.bitwarden.eu")),
+		notificationsURL: lo.Must(url.Parse("https://notifications.bitwarden.eu")),
 	},
 }
 
@@ -36,9 +39,10 @@ func normalizeBaseURL(baseURL *url.URL) *urlConfig {
 	}
 
 	return &urlConfig{
-		baseURL:     baseURL,
-		identityURL: baseURL,
-		apiURL:      urlWithPath(baseURL, "/api"),
+		baseURL:          baseURL,
+		identityURL:      baseURL,
+		apiURL:           urlWithPath(baseURL, "/api"),
+		notificationsURL: baseURL,
 	}
 }
 
@@ -67,6 +71,7 @@ func WithBaseURL(baseURL string) Option {
 
 		bwClient.identityURL = normalized.identityURL
 		bwClient.apiURL = normalized.apiURL
+		bwClient.notificationsURL = normalized.notificationsURL
 		return nil
 	}
 }
@@ -99,6 +104,22 @@ func WithAPIURL(apiURL string) Option {
 			return fmt.Errorf("failed parsing api url: %w", err)
 		}
 		bwClient.apiURL = parsed
+		return nil
+	}
+}
+
+func WithNotificationsURL(uri string) Option {
+	return func(bwClient *client) error {
+		if uri == "" {
+			bwClient.notificationsURL = nil
+			return nil
+		}
+
+		parsed, err := url.Parse(uri)
+		if err != nil {
+			return fmt.Errorf("failed parsing notifications url: %w", err)
+		}
+		bwClient.notificationsURL = parsed
 		return nil
 	}
 }
