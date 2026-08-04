@@ -42,7 +42,7 @@ func normalizeBaseURL(baseURL *url.URL) *urlConfig {
 		baseURL:          baseURL,
 		identityURL:      baseURL,
 		apiURL:           urlWithPath(baseURL, "/api"),
-		notificationsURL: baseURL,
+		notificationsURL: urlWithPath(baseURL, "/notifications"),
 	}
 }
 
