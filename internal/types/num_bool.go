@@ -13,7 +13,7 @@ func (receiver NumBool) MarshalJSON() ([]byte, error) {
 		i = 1
 	}
 
-	return []byte(fmt.Sprintf("%d", i)), nil
+	return fmt.Appendf(nil, "%d", i), nil
 }
 
 func (receiver *NumBool) UnmarshalJSON(data []byte) error {
