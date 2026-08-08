@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	clone "github.com/huandu/go-clone/generic"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/types"
 )
 
@@ -142,6 +143,8 @@ type Item struct {
 	Identity   *ItemIdentity   `json:"identity,omitempty"`
 	SSHKey     *ItemSSHKey     `json:"sshKey,omitempty"`
 
+	DecryptionError error
+
 	// bankAccount
 	// identity
 	// passport
@@ -151,4 +154,45 @@ type Item struct {
 	// driversLicense
 	// sshKey
 	// fields
+}
+
+func (receiver *Item) AsInvalidItem(err error) *Item {
+	fields := make([]*Field, 0, len(receiver.Fields))
+	for _, field := range receiver.Fields {
+		if field == nil {
+			fields = append(fields, nil)
+			continue
+		}
+
+		fields = append(fields, &Field{
+			Type:     field.Type,
+			LinkedID: field.LinkedID,
+		})
+	}
+
+	var secureNote *ItemSecureNote
+	if receiver.SecureNote != nil {
+		secureNote = &ItemSecureNote{Type: receiver.SecureNote.Type}
+	}
+
+	return &Item{
+		ID:                  receiver.ID,
+		Type:                receiver.Type,
+		OrganizationUseTOTP: receiver.OrganizationUseTOTP,
+		RevisionDate:        receiver.RevisionDate,
+		DeletedDate:         receiver.DeletedDate,
+		Favorite:            receiver.Favorite,
+		OrganizationID:      receiver.OrganizationID,
+		Permissions:         receiver.Permissions,
+		Edit:                receiver.Edit,
+		CollectionIDs:       clone.Clone(receiver.CollectionIDs),
+		ArchivedDate:        receiver.ArchivedDate,
+		FolderID:            receiver.FolderID,
+		ViewPassword:        receiver.ViewPassword,
+		CreationDate:        receiver.CreationDate,
+		Reprompt:            receiver.Reprompt,
+		Fields:              fields,
+		SecureNote:          secureNote,
+		DecryptionError:     err,
+	}
 }

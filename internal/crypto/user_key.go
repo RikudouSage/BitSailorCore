@@ -22,7 +22,7 @@ func DecryptUserKey(encryptedUserKey string, masterKey []byte) ([]byte, error) {
 func decryptEncryptedString(value string, encKey, macKey []byte) ([]byte, error) {
 	parts := strings.SplitN(value, ".", 2)
 	if len(parts) != 2 {
-		return nil, fmt.Errorf("invalid encrypted string: %s", value)
+		return nil, fmt.Errorf("%w: %s", ErrInvalidEncryptedString, value)
 	}
 	if parts[0] != "2" {
 		return nil, fmt.Errorf("unsupported encrypted string type: %s", parts[0])

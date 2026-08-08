@@ -134,6 +134,8 @@ typedef struct {
     BitwardenItemSecureNote* secureNote;
     BitwardenItemIdentity* identity;
     BitwardenItemSshKey* sshKey;
+
+    char* decryptionError;
 } BitwardenItem;
 
 typedef struct {

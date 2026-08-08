@@ -2,8 +2,10 @@ package bitwarden
 
 import (
 	"context"
+	"errors"
 
 	"github.com/samber/lo"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/types"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 	"golang.org/x/sync/errgroup"
@@ -27,7 +29,10 @@ func (receiver *vault) GetItems(ctx context.Context, session *result.Session) ([
 		wg.Go(func() error {
 			newItem, err := receiver.DecryptItem(ctx, session, item)
 			if err != nil {
-				return err
+				if !errors.Is(err, crypto.ErrInvalidEncryptedString) {
+					return err
+				}
+				newItem = item.AsInvalidItem(err)
 			}
 			if err = resultSlice.Insert(index, newItem); err != nil {
 				return err

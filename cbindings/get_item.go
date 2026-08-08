@@ -84,6 +84,11 @@ func bitwardenItemIntoC(out *C.BitwardenItem, item *result.Item) {
 	putCPtr(base, unsafe.Offsetof(out.secureNote), cPtr(cItemSecureNoteFromPtr(item.SecureNote)))
 	putCPtr(base, unsafe.Offsetof(out.identity), cPtr(cItemIdentityFromPtr(item.Identity)))
 	putCPtr(base, unsafe.Offsetof(out.sshKey), cPtr(cItemSSHKeyFromPtr(item.SSHKey)))
+	if item.DecryptionError != nil {
+		putCPtr(base, unsafe.Offsetof(out.decryptionError), cStringPtr(item.DecryptionError.Error()))
+	} else {
+		putCPtr(base, unsafe.Offsetof(out.decryptionError), nil)
+	}
 }
 
 func freeBitwardenItem(item *C.BitwardenItem) {
@@ -105,6 +110,7 @@ func freeBitwardenItem(item *C.BitwardenItem) {
 	freeItemSecureNote(item.secureNote)
 	freeItemIdentity(item.identity)
 	freeItemSSHKey(item.sshKey)
+	C.free(unsafe.Pointer(item.decryptionError))
 
 	clearC(item)
 }

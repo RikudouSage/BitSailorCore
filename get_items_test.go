@@ -2,12 +2,14 @@ package bitwarden
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/types"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
@@ -50,5 +52,143 @@ func TestGetItemsFiltersDeletedItems(t *testing.T) {
 	}
 	if items[0].Name != "Active item" {
 		t.Fatalf("items[0].Name = %q, want Active item", items[0].Name)
+	}
+}
+
+func TestGetItemsReturnsInvalidPlaceholderForMalformedItem(t *testing.T) {
+	t.Parallel()
+
+	userKey := dto.Key([]byte("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"))
+	validName, err := crypto.EncryptString("Valid item", userKey)
+	if err != nil {
+		t.Fatalf("EncryptString() returned error: %v", err)
+	}
+	encryptedNotes, err := crypto.EncryptString("Secret note", userKey)
+	if err != nil {
+		t.Fatalf("EncryptString() returned error: %v", err)
+	}
+	encryptedFieldName, err := crypto.EncryptString("Secret field name", userKey)
+	if err != nil {
+		t.Fatalf("EncryptString() returned error: %v", err)
+	}
+	encryptedFieldValue, err := crypto.EncryptString("Secret field value", userKey)
+	if err != nil {
+		t.Fatalf("EncryptString() returned error: %v", err)
+	}
+
+	validID := uuid.MustParse("11111111-1111-1111-1111-111111111111")
+	invalidID := uuid.MustParse("22222222-2222-2222-2222-222222222222")
+	orgID := uuid.MustParse("33333333-3333-3333-3333-333333333333")
+	folderID := uuid.MustParse("44444444-4444-4444-4444-444444444444")
+	collectionIDs := []uuid.UUID{
+		uuid.MustParse("55555555-5555-5555-5555-555555555555"),
+		uuid.MustParse("66666666-6666-6666-6666-666666666666"),
+	}
+	revisionDate := time.Date(2026, time.August, 8, 10, 30, 0, 0, time.UTC)
+	creationDate := time.Date(2026, time.August, 8, 9, 30, 0, 0, time.UTC)
+	archivedDate := time.Date(2026, time.August, 8, 11, 30, 0, 0, time.UTC)
+	organizationUseTOTP := true
+	linkedID := 7
+	permissions := &result.ItemPermissions{Delete: true, Restore: true}
+	invalidEncryptedKey := "not encrypted"
+
+	vault := &vault{
+		vaultData: &result.VaultData{
+			Items: []*result.Item{
+				{ID: validID, Type: result.ItemTypeSecureNote, Name: validName, SecureNote: &result.ItemSecureNote{}},
+				{
+					ID:                  invalidID,
+					Type:                result.ItemTypeSecureNote,
+					Notes:               &encryptedNotes,
+					OrganizationUseTOTP: &organizationUseTOTP,
+					RevisionDate:        revisionDate,
+					Favorite:            true,
+					OrganizationID:      orgID,
+					Key:                 &invalidEncryptedKey,
+					Permissions:         permissions,
+					Edit:                true,
+					CollectionIDs:       collectionIDs,
+					ArchivedDate:        &archivedDate,
+					FolderID:            folderID,
+					ViewPassword:        true,
+					Name:                "not encrypted",
+					CreationDate:        creationDate,
+					Reprompt:            types.NumBool(true),
+					Fields: []*result.Field{
+						{Type: result.FieldTypeLinkedID, Name: encryptedFieldName, Value: &encryptedFieldValue, LinkedID: &linkedID},
+					},
+					SecureNote: &result.ItemSecureNote{Type: 1},
+				},
+			},
+		},
+	}
+	session := &result.Session{
+		Encryption: &result.EncryptionData{
+			UserKey:          userKey,
+			OrganizationKeys: map[uuid.UUID]dto.Key{orgID: userKey},
+		},
+	}
+
+	items, err := vault.GetItems(context.Background(), session)
+	if err != nil {
+		t.Fatalf("GetItems() returned error: %v", err)
+	}
+
+	if len(items) != 2 {
+		t.Fatalf("len(items) = %d, want 2", len(items))
+	}
+	if items[0].ID != validID {
+		t.Fatalf("items[0].ID = %s, want %s", items[0].ID, validID)
+	}
+	if items[0].Name != "Valid item" {
+		t.Fatalf("items[0].Name = %q, want Valid item", items[0].Name)
+	}
+
+	invalidItem := items[1]
+	if invalidItem.ID != invalidID {
+		t.Fatalf("invalidItem.ID = %s, want %s", invalidItem.ID, invalidID)
+	}
+	if !errors.Is(invalidItem.DecryptionError, crypto.ErrInvalidEncryptedString) {
+		t.Fatalf("invalidItem.DecryptionError = %v, want ErrInvalidEncryptedString", invalidItem.DecryptionError)
+	}
+	if invalidItem.Name != "" {
+		t.Fatalf("invalidItem.Name = %q, want empty string", invalidItem.Name)
+	}
+	if invalidItem.Notes != nil {
+		t.Fatalf("invalidItem.Notes = %q, want nil", *invalidItem.Notes)
+	}
+	if invalidItem.Key != nil {
+		t.Fatalf("invalidItem.Key = %q, want nil", *invalidItem.Key)
+	}
+
+	if invalidItem.OrganizationUseTOTP != &organizationUseTOTP || invalidItem.Permissions != permissions {
+		t.Fatal("invalidItem did not preserve pointer metadata")
+	}
+	if invalidItem.RevisionDate != revisionDate || invalidItem.CreationDate != creationDate {
+		t.Fatal("invalidItem did not preserve item dates")
+	}
+	if invalidItem.ArchivedDate != &archivedDate {
+		t.Fatal("invalidItem did not preserve archived date")
+	}
+	if !invalidItem.Favorite || !invalidItem.Edit || !invalidItem.ViewPassword || !bool(invalidItem.Reprompt) {
+		t.Fatal("invalidItem did not preserve boolean metadata")
+	}
+	if invalidItem.OrganizationID != orgID || invalidItem.FolderID != folderID {
+		t.Fatal("invalidItem did not preserve UUID metadata")
+	}
+	if len(invalidItem.CollectionIDs) != len(collectionIDs) || invalidItem.CollectionIDs[0] != collectionIDs[0] || invalidItem.CollectionIDs[1] != collectionIDs[1] {
+		t.Fatalf("invalidItem.CollectionIDs = %v, want %v", invalidItem.CollectionIDs, collectionIDs)
+	}
+	if len(invalidItem.Fields) != 1 {
+		t.Fatalf("len(invalidItem.Fields) = %d, want 1", len(invalidItem.Fields))
+	}
+	if invalidItem.Fields[0].Type != result.FieldTypeLinkedID || invalidItem.Fields[0].LinkedID != &linkedID {
+		t.Fatal("invalidItem did not preserve field metadata")
+	}
+	if invalidItem.Fields[0].Name != "" || invalidItem.Fields[0].Value != nil {
+		t.Fatal("invalidItem preserved encrypted field payload")
+	}
+	if invalidItem.SecureNote == nil || invalidItem.SecureNote.Type != 1 {
+		t.Fatal("invalidItem did not preserve secure note metadata")
 	}
 }

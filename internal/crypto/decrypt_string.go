@@ -6,11 +6,14 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strings"
 
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
 )
+
+var ErrInvalidEncryptedString = errors.New("invalid encrypted string")
 
 func DecryptNullableString(encrypted *string, userKey []byte) (*string, error) {
 	if encrypted == nil {
@@ -35,7 +38,6 @@ func DecryptString(encrypted string, key []byte) (string, error) {
 }
 
 func DecryptBytes(encrypted string, key dto.Key) ([]byte, error) {
-
 	if len(key) != 64 {
 		return nil, fmt.Errorf("expected 64-byte user key, got %d", len(key))
 	}
@@ -45,30 +47,30 @@ func DecryptBytes(encrypted string, key dto.Key) ([]byte, error) {
 
 	parts := strings.SplitN(encrypted, ".", 2)
 	if len(parts) != 2 {
-		return nil, fmt.Errorf("invalid encrypted string")
+		return nil, ErrInvalidEncryptedString
 	}
 	if parts[0] != "2" {
-		return nil, fmt.Errorf("unsupported encrypted string type: %s", parts[0])
+		return nil, fmt.Errorf("%w: unsupported encrypted string type: %s", ErrInvalidEncryptedString, parts[0])
 	}
 
 	payload := strings.Split(parts[1], "|")
 	if len(payload) != 3 {
-		return nil, fmt.Errorf("invalid encrypted string payload")
+		return nil, fmt.Errorf("%w payload", ErrInvalidEncryptedString)
 	}
 
 	iv, err := base64.StdEncoding.DecodeString(payload[0])
 	if err != nil {
-		return nil, fmt.Errorf("failed base64 decoding iv: %w", err)
+		return nil, fmt.Errorf("%w: failed base64 decoding iv: %w", ErrInvalidEncryptedString, err)
 	}
 
 	ciphertext, err := base64.StdEncoding.DecodeString(payload[1])
 	if err != nil {
-		return nil, fmt.Errorf("failed base64 decoding ciphertext: %w", err)
+		return nil, fmt.Errorf("%w: failed base64 decoding ciphertext: %w", ErrInvalidEncryptedString, err)
 	}
 
 	expectedMAC, err := base64.StdEncoding.DecodeString(payload[2])
 	if err != nil {
-		return nil, fmt.Errorf("failed base64 decoding mac: %w", err)
+		return nil, fmt.Errorf("%w: failed base64 decoding mac: %w", ErrInvalidEncryptedString, err)
 	}
 
 	mac := hmac.New(sha256.New, macKey)
