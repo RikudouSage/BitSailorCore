@@ -57,9 +57,11 @@ func deriveSha256(email, password string, iterations int) []byte {
 }
 
 func deriveArgon2ID(email, password string, iterations int, memory int, parallelism int) []byte {
+	salt := sha256.Sum256([]byte(email))
+
 	return argon2.IDKey(
 		[]byte(password),
-		[]byte(email),
+		salt[:],
 		uint32(iterations),
 		uint32(memory)*1024,
 		uint8(parallelism),
