@@ -16,6 +16,9 @@ func (receiver *Session) ValidateForUnlock() error {
 	if receiver.Auth == nil {
 		return errors.New("locked session auth data is nil")
 	}
+	if receiver.Encryption == nil {
+		return errors.New("locked session encryption data is nil")
+	}
 	if receiver.Encryption.EncryptedUserKey == nil {
 		return errors.New("locked session missing encrypted user key")
 	}
