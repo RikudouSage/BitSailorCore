@@ -3,6 +3,8 @@ package bitwarden
 import (
 	"context"
 	"errors"
+	"slices"
+	"strings"
 
 	"github.com/samber/lo"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
@@ -46,5 +48,10 @@ func (receiver *vault) GetItems(ctx context.Context, session *result.Session) ([
 		return nil, err
 	}
 
-	return resultSlice.ToSlice(), nil
+	results := resultSlice.ToSlice()
+	slices.SortStableFunc(results, func(a, b *result.Item) int {
+		return strings.Compare(a.Name, b.Name)
+	})
+
+	return results, nil
 }

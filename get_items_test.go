@@ -55,6 +55,59 @@ func TestGetItemsFiltersDeletedItems(t *testing.T) {
 	}
 }
 
+func TestGetItemsSortsItemsByName(t *testing.T) {
+	t.Parallel()
+
+	userKey := dto.Key("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	malformedID := uuid.MustParse("44444444-4444-4444-4444-444444444444")
+	names := []string{"Charlie item", "Alpha item", "Bravo item"}
+	encryptedNames := make([]string, 0, len(names))
+	for _, name := range names {
+		encryptedName, err := crypto.EncryptString(name, userKey)
+		if err != nil {
+			t.Fatalf("EncryptString(%q) returned error: %v", name, err)
+		}
+		encryptedNames = append(encryptedNames, encryptedName)
+	}
+
+	vault := &vault{
+		vaultData: &result.VaultData{
+			Items: []*result.Item{
+				{ID: uuid.MustParse("33333333-3333-3333-3333-333333333333"), Type: result.ItemTypeSecureNote, Name: encryptedNames[0], SecureNote: &result.ItemSecureNote{}},
+				{ID: uuid.MustParse("11111111-1111-1111-1111-111111111111"), Type: result.ItemTypeSecureNote, Name: encryptedNames[1], SecureNote: &result.ItemSecureNote{}},
+				{ID: malformedID, Type: result.ItemTypeSecureNote, Name: "not encrypted", SecureNote: &result.ItemSecureNote{}},
+				{ID: uuid.MustParse("22222222-2222-2222-2222-222222222222"), Type: result.ItemTypeSecureNote, Name: encryptedNames[2], SecureNote: &result.ItemSecureNote{}},
+			},
+		},
+	}
+	session := &result.Session{
+		Encryption: &result.EncryptionData{
+			UserKey: userKey,
+		},
+	}
+
+	items, err := vault.GetItems(context.Background(), session)
+	if err != nil {
+		t.Fatalf("GetItems() returned error: %v", err)
+	}
+
+	wantNames := []string{"", "Alpha item", "Bravo item", "Charlie item"}
+	if len(items) != len(wantNames) {
+		t.Fatalf("len(items) = %d, want %d", len(items), len(wantNames))
+	}
+	for index, wantName := range wantNames {
+		if items[index].Name != wantName {
+			t.Fatalf("items[%d].Name = %q, want %q", index, items[index].Name, wantName)
+		}
+	}
+	if items[0].ID != malformedID {
+		t.Fatalf("items[0].ID = %s, want malformed item %s", items[0].ID, malformedID)
+	}
+	if !errors.Is(items[0].DecryptionError, crypto.ErrInvalidEncryptedString) {
+		t.Fatalf("items[0].DecryptionError = %v, want ErrInvalidEncryptedString", items[0].DecryptionError)
+	}
+}
+
 func TestGetItemsReturnsInvalidPlaceholderForMalformedItem(t *testing.T) {
 	t.Parallel()
 
@@ -137,16 +190,23 @@ func TestGetItemsReturnsInvalidPlaceholderForMalformedItem(t *testing.T) {
 	if len(items) != 2 {
 		t.Fatalf("len(items) = %d, want 2", len(items))
 	}
-	if items[0].ID != validID {
-		t.Fatalf("items[0].ID = %s, want %s", items[0].ID, validID)
+	var validItem, invalidItem *result.Item
+	for _, item := range items {
+		switch item.ID {
+		case validID:
+			validItem = item
+		case invalidID:
+			invalidItem = item
+		}
 	}
-	if items[0].Name != "Valid item" {
-		t.Fatalf("items[0].Name = %q, want Valid item", items[0].Name)
+	if validItem == nil {
+		t.Fatalf("items did not contain valid item %s", validID)
 	}
-
-	invalidItem := items[1]
-	if invalidItem.ID != invalidID {
-		t.Fatalf("invalidItem.ID = %s, want %s", invalidItem.ID, invalidID)
+	if validItem.Name != "Valid item" {
+		t.Fatalf("validItem.Name = %q, want Valid item", validItem.Name)
+	}
+	if invalidItem == nil {
+		t.Fatalf("items did not contain invalid item %s", invalidID)
 	}
 	if !errors.Is(invalidItem.DecryptionError, crypto.ErrInvalidEncryptedString) {
 		t.Fatalf("invalidItem.DecryptionError = %v, want ErrInvalidEncryptedString", invalidItem.DecryptionError)
