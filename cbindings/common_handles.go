@@ -69,3 +69,16 @@ func getCommonNotificationHandles(
 	notificationsGo = clientGo.Notifications()
 	return
 }
+
+func getCommonIconsHandles(
+	client C.ClientHandle,
+	ctx C.ContextHandle,
+) (iconsGo bitwarden.Icons, ctxGo context.Context, err error) {
+	clientGo, ctxGo, err := getCommonAuthHandles(client, ctx)
+	if err != nil {
+		return
+	}
+
+	iconsGo = clientGo.Icons()
+	return
+}

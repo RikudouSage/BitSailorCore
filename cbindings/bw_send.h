@@ -18,11 +18,6 @@ typedef enum {
 } BitwardenSendType;
 
 typedef struct {
-    char** items;
-    size_t len;
-} BitwardenStringSlice;
-
-typedef struct {
     char* text;
     bool hidden;
 } BitwardenSendText;

@@ -9,6 +9,7 @@ typedef struct {
 	const char* identityUrl;
 	const char* apiUrl;
 	const char* notificationsUrl;
+	const char* iconsUrl;
 	const Handle* httpClient;
 	const UUID* deviceId;
 	const bool* ignoreCerts;
@@ -42,6 +43,9 @@ func BitwardenNewClient(outHandle *C.ClientHandle, options C.NewClientOptions) C
 	}
 	if options.notificationsUrl != nil {
 		goOptions = append(goOptions, bitwarden.WithNotificationsURL(C.GoString(options.notificationsUrl)))
+	}
+	if options.iconsUrl != nil {
+		goOptions = append(goOptions, bitwarden.WithIconsURL(C.GoString(options.iconsUrl)))
 	}
 	if options.ignoreCerts != nil && *options.ignoreCerts {
 		goOptions = append(goOptions, bitwarden.WithHTTPClient(ignoreCertsOnClient(nil)))

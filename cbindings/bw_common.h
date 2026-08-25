@@ -20,6 +20,16 @@ typedef struct {
    size_t len;
 } UUIDSlice;
 
+typedef struct {
+    char** items;
+    size_t len;
+} BitwardenStringSlice;
+
+typedef struct {
+    uint8_t* items;
+    size_t len;
+} BitwardenByteSlice;
+
 enum {
     BitwardenSuccess = 0,
     BitwardenError = 1,
