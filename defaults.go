@@ -12,7 +12,7 @@ import (
 func (receiver *client) provideDefaultsAndValidate() error {
 	const defaultURL = "https://bitwarden.com"
 	var normalized *urlConfig
-	if receiver.identityURL == nil || receiver.apiURL == nil || receiver.notificationsURL == nil {
+	if receiver.identityURL == nil || receiver.apiURL == nil || receiver.notificationsURL == nil || receiver.iconsURL == nil {
 		normalized = normalizeBaseURL(lo.Must(url.Parse(defaultURL)))
 	}
 
@@ -27,6 +27,9 @@ func (receiver *client) provideDefaultsAndValidate() error {
 	}
 	if receiver.notificationsURL == nil {
 		receiver.notificationsURL = normalized.notificationsURL
+	}
+	if receiver.iconsURL == nil {
+		receiver.iconsURL = normalized.iconsURL
 	}
 
 	if receiver.deviceID == uuid.Nil {

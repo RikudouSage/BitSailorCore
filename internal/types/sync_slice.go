@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"sync"
 )
 
@@ -61,5 +62,5 @@ func (receiver *SyncSlice[TType]) ToSlice() []TType {
 	receiver.lock.RLock()
 	defer receiver.lock.RUnlock()
 
-	return receiver.slice
+	return slices.Clone(receiver.slice)
 }

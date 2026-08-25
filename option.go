@@ -14,6 +14,7 @@ type urlConfig struct {
 	identityURL      *url.URL
 	apiURL           *url.URL
 	notificationsURL *url.URL
+	iconsURL         *url.URL
 }
 
 var specialURLs = []urlConfig{
@@ -22,12 +23,14 @@ var specialURLs = []urlConfig{
 		identityURL:      lo.Must(url.Parse("https://vault.bitwarden.com")),
 		apiURL:           lo.Must(url.Parse("https://api.bitwarden.com")),
 		notificationsURL: lo.Must(url.Parse("https://notifications.bitwarden.com")),
+		iconsURL:         lo.Must(url.Parse("https://icons.bitwarden.net")),
 	},
 	{
 		baseURL:          lo.Must(url.Parse("https://bitwarden.eu")),
 		identityURL:      lo.Must(url.Parse("https://vault.bitwarden.eu")),
 		apiURL:           lo.Must(url.Parse("https://api.bitwarden.eu")),
 		notificationsURL: lo.Must(url.Parse("https://notifications.bitwarden.eu")),
+		iconsURL:         lo.Must(url.Parse("https://icons.bitwarden.eu")),
 	},
 }
 
@@ -43,6 +46,7 @@ func normalizeBaseURL(baseURL *url.URL) *urlConfig {
 		identityURL:      baseURL,
 		apiURL:           urlWithPath(baseURL, "/api"),
 		notificationsURL: urlWithPath(baseURL, "/notifications"),
+		iconsURL:         urlWithPath(baseURL, "/icons"),
 	}
 }
 
@@ -60,6 +64,8 @@ func WithBaseURL(baseURL string) Option {
 		if baseURL == "" {
 			bwClient.identityURL = nil
 			bwClient.apiURL = nil
+			bwClient.notificationsURL = nil
+			bwClient.iconsURL = nil
 			return nil
 		}
 
@@ -72,6 +78,7 @@ func WithBaseURL(baseURL string) Option {
 		bwClient.identityURL = normalized.identityURL
 		bwClient.apiURL = normalized.apiURL
 		bwClient.notificationsURL = normalized.notificationsURL
+		bwClient.iconsURL = normalized.iconsURL
 		return nil
 	}
 }
@@ -120,6 +127,22 @@ func WithNotificationsURL(uri string) Option {
 			return fmt.Errorf("failed parsing notifications url: %w", err)
 		}
 		bwClient.notificationsURL = parsed
+		return nil
+	}
+}
+
+func WithIconsURL(uri string) Option {
+	return func(bwClient *client) error {
+		if uri == "" {
+			bwClient.iconsURL = nil
+			return nil
+		}
+
+		parsed, err := url.Parse(uri)
+		if err != nil {
+			return fmt.Errorf("failed parsing icons url: %w", err)
+		}
+		bwClient.iconsURL = parsed
 		return nil
 	}
 }

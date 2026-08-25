@@ -50,6 +50,9 @@ func TestNewClientAppliesDefaultsAndOptions(t *testing.T) {
 	if client.notificationsURL.String() != "https://notifications.bitwarden.com" {
 		t.Fatalf("notificationsURL = %s, want https://notifications.bitwarden.com", client.notificationsURL)
 	}
+	if client.iconsURL.String() != "https://icons.bitwarden.net" {
+		t.Fatalf("iconsURL = %s, want https://icons.bitwarden.net", client.iconsURL)
+	}
 }
 
 func TestWithBaseURLNormalizesSpecialAndSelfHostedURLs(t *testing.T) {
@@ -61,6 +64,7 @@ func TestWithBaseURLNormalizesSpecialAndSelfHostedURLs(t *testing.T) {
 		wantIdentity      string
 		wantAPI           string
 		wantNotifications string
+		wantIcons         string
 	}{
 		{
 			name:              "US cloud",
@@ -68,6 +72,7 @@ func TestWithBaseURLNormalizesSpecialAndSelfHostedURLs(t *testing.T) {
 			wantIdentity:      "https://vault.bitwarden.com",
 			wantAPI:           "https://api.bitwarden.com",
 			wantNotifications: "https://notifications.bitwarden.com",
+			wantIcons:         "https://icons.bitwarden.net",
 		},
 		{
 			name:              "EU cloud",
@@ -75,6 +80,7 @@ func TestWithBaseURLNormalizesSpecialAndSelfHostedURLs(t *testing.T) {
 			wantIdentity:      "https://vault.bitwarden.eu",
 			wantAPI:           "https://api.bitwarden.eu",
 			wantNotifications: "https://notifications.bitwarden.eu",
+			wantIcons:         "https://icons.bitwarden.eu",
 		},
 		{
 			name:              "self hosted",
@@ -82,6 +88,7 @@ func TestWithBaseURLNormalizesSpecialAndSelfHostedURLs(t *testing.T) {
 			wantIdentity:      "https://bw.example.test",
 			wantAPI:           "https://bw.example.test/api",
 			wantNotifications: "https://bw.example.test/notifications",
+			wantIcons:         "https://bw.example.test/icons",
 		},
 	}
 
@@ -102,6 +109,9 @@ func TestWithBaseURLNormalizesSpecialAndSelfHostedURLs(t *testing.T) {
 			}
 			if client.notificationsURL.String() != test.wantNotifications {
 				t.Fatalf("notificationsURL = %s, want %s", client.notificationsURL, test.wantNotifications)
+			}
+			if client.iconsURL.String() != test.wantIcons {
+				t.Fatalf("iconsURL = %s, want %s", client.iconsURL, test.wantIcons)
 			}
 		})
 	}
@@ -129,6 +139,11 @@ func TestURLSetterOptions(t *testing.T) {
 			name: "notifications URL",
 			run:  WithNotificationsURL("https://notifications.example.test"),
 			want: func(client *client) string { return client.notificationsURL.String() },
+		},
+		{
+			name: "icons URL",
+			run:  WithIconsURL("https://icons.example.test"),
+			want: func(client *client) string { return client.iconsURL.String() },
 		},
 	}
 
@@ -172,6 +187,12 @@ func TestURLSetterOptionsClearValues(t *testing.T) {
 	if client.notificationsURL != nil {
 		t.Fatalf("notificationsURL = %s, want nil", client.notificationsURL)
 	}
+	if err := WithIconsURL("")(client); err != nil {
+		t.Fatalf("WithIconsURL(empty) returned error: %v", err)
+	}
+	if client.iconsURL != nil {
+		t.Fatalf("iconsURL = %s, want nil", client.iconsURL)
+	}
 }
 
 func TestClientAccessorsCacheServices(t *testing.T) {
@@ -192,5 +213,8 @@ func TestClientAccessorsCacheServices(t *testing.T) {
 	}
 	if client.Notifications() != client.Notifications() {
 		t.Fatal("Notifications() did not cache service")
+	}
+	if client.Icons() != client.Icons() {
+		t.Fatal("Icons() did not cache service")
 	}
 }

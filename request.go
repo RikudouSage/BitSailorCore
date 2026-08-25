@@ -72,6 +72,15 @@ func doRequest[TResponse any](
 		return out, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
+	if _, ok := any(out).([]byte); ok {
+		data, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return out, fmt.Errorf("failed reading response body: %w", err)
+		}
+
+		return any(data).(TResponse), nil
+	}
+
 	if err = json.NewDecoder(resp.Body).Decode(&out); err != nil {
 		if errors.Is(err, io.EOF) {
 			return out, nil

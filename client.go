@@ -15,6 +15,7 @@ type Client interface {
 	Auth() Auth
 	Vault() Vault
 	Notifications() Notifications
+	Icons() Icons
 
 	GeneratePassword(request *PasswordGeneratorRequest) (string, error)
 	GeneratePassphrase(request *PassphraseGeneratorRequest) (string, error)
@@ -25,6 +26,7 @@ type client struct {
 	identityURL      *url.URL
 	apiURL           *url.URL
 	notificationsURL *url.URL
+	iconsURL         *url.URL
 	deviceID         uuid.UUID
 
 	debugLogs bool
@@ -32,6 +34,7 @@ type client struct {
 	auth          *auth
 	vault         *vault
 	notifications *notifications
+	icons         *icons
 }
 
 func NewClient(options ...Option) (Client, error) {
@@ -89,4 +92,12 @@ func (receiver *client) Notifications() Notifications {
 	}
 
 	return receiver.notifications
+}
+
+func (receiver *client) Icons() Icons {
+	if receiver.icons == nil {
+		receiver.icons = newIcons(receiver.httpClient, receiver.debugLogs, receiver.iconsURL)
+	}
+
+	return receiver.icons
 }
