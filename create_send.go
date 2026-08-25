@@ -37,7 +37,7 @@ func (receiver *vault) createTextSend(ctx context.Context, session *result.Sessi
 	if err := receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err
 	}
-	newItem, err := request[*result.Send](ctx, receiver.httpClient, http.MethodPost, targetUri, item, session, false)
+	newItem, err := receiver.request[*result.Send](ctx, http.MethodPost, targetUri, item, session)
 	if err != nil {
 		return fmt.Errorf("failed creating the send: %w", err)
 	}
@@ -74,7 +74,7 @@ func (receiver *vault) createFileSend(ctx context.Context, session *result.Sessi
 	if err = receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err
 	}
-	meta, err := request[metaResponse](ctx, receiver.httpClient, http.MethodPost, targetUri, item, session, false)
+	meta, err := receiver.request[metaResponse](ctx, http.MethodPost, targetUri, item, session)
 	if err != nil {
 		return fmt.Errorf("failed uploading file send metadata: %w", err)
 	}

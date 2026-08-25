@@ -71,6 +71,7 @@ func (receiver *client) Vault() Vault {
 			receiver.identityURL,
 			receiver.httpClient,
 			receiver.Auth().(*auth),
+			receiver.debugLogs,
 		)
 	}
 

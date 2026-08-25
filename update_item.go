@@ -35,7 +35,7 @@ func (receiver *vault) UpdateItem(ctx context.Context, session *result.Session, 
 	if err = receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err
 	}
-	updatedItemEnc, err := request[*result.Item](ctx, receiver.httpClient, http.MethodPut, targetUri, resultItem, session, false)
+	updatedItemEnc, err := receiver.request[*result.Item](ctx, http.MethodPut, targetUri, resultItem, session)
 	if err != nil {
 		return fmt.Errorf("failed updating the item: %w", err)
 	}

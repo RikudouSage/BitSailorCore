@@ -20,14 +20,12 @@ func (receiver *vault) Sync(ctx context.Context, session *result.Session) (Vault
 
 	uri := urlWithPath(receiver.apiURL, "/sync")
 
-	vaultData, err := request[*result.VaultData](
+	vaultData, err := receiver.request[*result.VaultData](
 		ctx,
-		receiver.httpClient,
 		http.MethodGet,
 		uri,
 		nil,
 		session,
-		false,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed syncing vault: %w", err)

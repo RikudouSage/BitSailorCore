@@ -15,7 +15,7 @@ import (
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
-func request[TResponse any](
+func doRequest[TResponse any](
 	ctx context.Context,
 	httpClient *http.Client,
 	method string,
@@ -80,4 +80,24 @@ func request[TResponse any](
 	}
 
 	return out, nil
+}
+
+func (receiver *auth) request[TResponse any](
+	ctx context.Context,
+	method string,
+	url *url.URL,
+	body any,
+	session *result.Session,
+) (TResponse, error) {
+	return doRequest[TResponse](ctx, receiver.httpClient, method, url, body, session, receiver.debugLogs)
+}
+
+func (receiver *vault) request[TResponse any](
+	ctx context.Context,
+	method string,
+	url *url.URL,
+	body any,
+	session *result.Session,
+) (TResponse, error) {
+	return doRequest[TResponse](ctx, receiver.httpClient, method, url, body, session, receiver.debugLogs)
 }

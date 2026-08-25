@@ -11,14 +11,12 @@ import (
 )
 
 func (receiver *auth) FetchAuthRequest(ctx context.Context, session *result.Session, id uuid.UUID) (*result.AuthRequest, error) {
-	req, err := request[*result.AuthRequest](
+	req, err := receiver.request[*result.AuthRequest](
 		ctx,
-		receiver.httpClient,
 		http.MethodGet,
 		urlWithPath(receiver.apiURL, fmt.Sprintf("/auth-requests/%s", id)),
 		nil,
 		session,
-		receiver.debugLogs,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed getting auth request: %w", err)
@@ -45,14 +43,12 @@ func (receiver *auth) RespondToAuthRequest(ctx context.Context, session *result.
 		update.Key = &key
 	}
 
-	resp, err := request[*result.AuthRequest](
+	resp, err := receiver.request[*result.AuthRequest](
 		ctx,
-		receiver.httpClient,
 		http.MethodPut,
 		urlWithPath(receiver.apiURL, fmt.Sprintf("/auth-requests/%s", authRequest.ID)),
 		update,
 		session,
-		receiver.debugLogs,
 	)
 	if err != nil {
 		return fmt.Errorf("failed responding to auth request: %w", err)

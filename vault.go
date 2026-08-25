@@ -38,14 +38,17 @@ type vault struct {
 
 	vaultData *result.VaultData
 	auth      *auth
+
+	debugLogs bool
 }
 
-func newVault(apiURL *url.URL, sendURL *url.URL, httpClient *http.Client, auth *auth) *vault {
+func newVault(apiURL *url.URL, sendURL *url.URL, httpClient *http.Client, auth *auth, debugLogs bool) *vault {
 	return &vault{
 		apiURL:     apiURL,
 		sendURL:    sendURL,
 		httpClient: httpClient,
 		auth:       auth,
+		debugLogs:  debugLogs,
 	}
 }
 
