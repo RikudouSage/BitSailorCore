@@ -25,7 +25,11 @@ func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, 
 	}
 
 	resultItem := clone.Clone(item)
-	err := receiver.encryptStruct(ctx, resultItem, session.Encryption.UserKey, nil)
+	key, err := receiver.getItemDecryptionKey(session, resultItem)
+	if err != nil {
+		return fmt.Errorf("failed fetching encryption key: %w", err)
+	}
+	err = receiver.encryptStruct(ctx, resultItem, key, []string{"Key"})
 	if err != nil {
 		return fmt.Errorf("failed encrypting struct: %w", err)
 	}

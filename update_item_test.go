@@ -132,3 +132,95 @@ func TestUpdateItemUpdatesRemoteItemAndReplacesVaultData(t *testing.T) {
 		t.Fatalf("decrypted cached item name = %q, want Updated item", decryptedCachedName)
 	}
 }
+
+func TestUpdateItemPreservesEncryptedItemKeyAndUsesDecryptedItemKey(t *testing.T) {
+	t.Parallel()
+
+	itemID := uuid.MustParse("11111111-1111-1111-1111-111111111111")
+	userKey := dto.Key([]byte("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"))
+	itemKey := dto.Key([]byte("abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"))
+	encryptedItemKey, err := crypto.EncryptBytes(itemKey, userKey)
+	if err != nil {
+		t.Fatalf("EncryptBytes() returned error: %v", err)
+	}
+	updatedEncryptedName, err := crypto.EncryptString("Updated item", itemKey)
+	if err != nil {
+		t.Fatalf("EncryptString() returned error: %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var requestItem result.Item
+		if err := json.NewDecoder(r.Body).Decode(&requestItem); err != nil {
+			t.Fatalf("Decode() returned error: %v", err)
+		}
+		if requestItem.Key == nil {
+			t.Fatal("request item key = nil, want encrypted item key")
+		}
+		if *requestItem.Key != encryptedItemKey {
+			t.Fatalf("request item key changed")
+		}
+		decryptedName, err := crypto.DecryptString(requestItem.Name, itemKey)
+		if err != nil {
+			t.Fatalf("DecryptString() with item key returned error: %v", err)
+		}
+		if decryptedName != "Updated item" {
+			t.Fatalf("decrypted request item name = %q, want Updated item", decryptedName)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(&result.Item{
+			ID:         itemID,
+			Type:       result.ItemTypeSecureNote,
+			Name:       updatedEncryptedName,
+			Key:        &encryptedItemKey,
+			SecureNote: &result.ItemSecureNote{},
+		})
+		if err != nil {
+			t.Fatalf("Encode() returned error: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	baseURL, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatalf("url.Parse() returned error: %v", err)
+	}
+
+	vault := &vault{
+		apiURL:     baseURL,
+		httpClient: server.Client(),
+		auth:       &auth{now: time.Now},
+		vaultData: &result.VaultData{
+			Items: []*result.Item{
+				{ID: itemID, Type: result.ItemTypeSecureNote, Name: updatedEncryptedName, Key: &encryptedItemKey, SecureNote: &result.ItemSecureNote{}},
+			},
+		},
+	}
+	session := &result.Session{
+		Auth: &result.AuthData{
+			AccessToken: "access-token",
+			ExpiresAt:   time.Now().Add(time.Hour),
+			TokenType:   "Bearer",
+		},
+		Encryption: &result.EncryptionData{
+			UserKey: userKey,
+		},
+	}
+	item := &result.Item{
+		ID:         itemID,
+		Type:       result.ItemTypeSecureNote,
+		Name:       "Updated item",
+		Key:        &encryptedItemKey,
+		SecureNote: &result.ItemSecureNote{},
+	}
+
+	if err = vault.UpdateItem(context.Background(), session, item); err != nil {
+		t.Fatalf("UpdateItem() returned error: %v", err)
+	}
+	if item.Name != "Updated item" {
+		t.Fatalf("item.Name = %q, want Updated item", item.Name)
+	}
+	if item.Key == nil || *item.Key != encryptedItemKey {
+		t.Fatal("item key was not preserved")
+	}
+}
