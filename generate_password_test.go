@@ -3,6 +3,7 @@ package bitwarden
 import (
 	"errors"
 	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -238,7 +239,7 @@ func takeMatchingRunes(t *testing.T, remaining *[]rune, set characterSet, count 
 	result := make([]rune, 0, count)
 	for range count {
 		found := false
-		for i := len(*remaining) - 1; i >= 0; i-- {
+		for i := range slices.Backward(*remaining) {
 			if !containsRune(set, (*remaining)[i]) {
 				continue
 			}
