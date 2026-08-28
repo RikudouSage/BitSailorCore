@@ -69,6 +69,8 @@ func WithBaseURL(baseURL string) Option {
 			return nil
 		}
 
+		baseURL = normalizePreParseURL(baseURL)
+
 		parsed, err := url.Parse(baseURL)
 		if err != nil {
 			return fmt.Errorf("failed parsing base url: %w", err)
@@ -90,6 +92,8 @@ func WithIdentityURL(identityURL string) Option {
 			return nil
 		}
 
+		identityURL = normalizePreParseURL(identityURL)
+
 		parsed, err := url.Parse(identityURL)
 		if err != nil {
 			return fmt.Errorf("failed parsing identity url: %w", err)
@@ -105,6 +109,8 @@ func WithAPIURL(apiURL string) Option {
 			bwClient.apiURL = nil
 			return nil
 		}
+
+		apiURL = normalizePreParseURL(apiURL)
 
 		parsed, err := url.Parse(apiURL)
 		if err != nil {
@@ -122,6 +128,8 @@ func WithNotificationsURL(uri string) Option {
 			return nil
 		}
 
+		uri = normalizePreParseURL(uri)
+
 		parsed, err := url.Parse(uri)
 		if err != nil {
 			return fmt.Errorf("failed parsing notifications url: %w", err)
@@ -137,6 +145,8 @@ func WithIconsURL(uri string) Option {
 			bwClient.iconsURL = nil
 			return nil
 		}
+
+		uri = normalizePreParseURL(uri)
 
 		parsed, err := url.Parse(uri)
 		if err != nil {

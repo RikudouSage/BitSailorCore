@@ -5,6 +5,14 @@ import (
 	"strings"
 )
 
+func normalizePreParseURL(url string) string {
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		url = "https://" + url
+	}
+
+	return url
+}
+
 func urlWithPath(base *url.URL, endpointPath string) *url.URL {
 	uri := new(*base)
 	basePath := strings.TrimRight(uri.Path, "/")
