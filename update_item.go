@@ -2,11 +2,9 @@ package bitwarden
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
 	clone "github.com/huandu/go-clone/generic"
 	"github.com/samber/lo"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
@@ -15,10 +13,6 @@ import (
 func (receiver *vault) UpdateItem(ctx context.Context, session *result.Session, item *result.Item) error {
 	if receiver.vaultData == nil {
 		return ErrMissingVault
-	}
-
-	if item.OrganizationID != uuid.Nil {
-		return errors.New("updating items inside organizations is not supported yet")
 	}
 
 	resultItem := clone.Clone(item)

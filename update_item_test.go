@@ -224,3 +224,122 @@ func TestUpdateItemPreservesEncryptedItemKeyAndUsesDecryptedItemKey(t *testing.T
 		t.Fatal("item key was not preserved")
 	}
 }
+
+func TestUpdateItemWithOrganizationIDUsesOrganizationKey(t *testing.T) {
+	t.Parallel()
+
+	itemID := uuid.MustParse("11111111-1111-1111-1111-111111111111")
+	orgID := uuid.MustParse("22222222-2222-2222-2222-222222222222")
+	userKey := dto.Key([]byte("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"))
+	orgKey := dto.Key([]byte("abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"))
+	originalEncryptedName, err := crypto.EncryptString("Original org item", orgKey)
+	if err != nil {
+		t.Fatalf("EncryptString() returned error: %v", err)
+	}
+	updatedEncryptedName, err := crypto.EncryptString("Updated org item", orgKey)
+	if err != nil {
+		t.Fatalf("EncryptString() returned error: %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			t.Fatalf("method = %s, want %s", r.Method, http.MethodPut)
+		}
+		if r.URL.Path != "/ciphers/"+itemID.String() {
+			t.Fatalf("path = %s, want /ciphers/%s", r.URL.Path, itemID)
+		}
+
+		var requestItem result.Item
+		if err := json.NewDecoder(r.Body).Decode(&requestItem); err != nil {
+			t.Fatalf("Decode() returned error: %v", err)
+		}
+		if requestItem.OrganizationID != orgID {
+			t.Fatalf("request item organization ID = %s, want %s", requestItem.OrganizationID, orgID)
+		}
+		if _, err := crypto.DecryptString(requestItem.Name, userKey); err == nil {
+			t.Fatal("request item name decrypted with user key, want organization key")
+		}
+		decryptedName, err := crypto.DecryptString(requestItem.Name, orgKey)
+		if err != nil {
+			t.Fatalf("DecryptString() with organization key returned error: %v", err)
+		}
+		if decryptedName != "Updated org item" {
+			t.Fatalf("decrypted request item name = %q, want Updated org item", decryptedName)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(&result.Item{
+			ID:             itemID,
+			Type:           result.ItemTypeSecureNote,
+			Name:           updatedEncryptedName,
+			OrganizationID: orgID,
+			SecureNote:     &result.ItemSecureNote{},
+		})
+		if err != nil {
+			t.Fatalf("Encode() returned error: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	baseURL, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatalf("url.Parse() returned error: %v", err)
+	}
+
+	vault := &vault{
+		apiURL:     baseURL,
+		httpClient: server.Client(),
+		auth:       &auth{now: time.Now},
+		vaultData: &result.VaultData{
+			Items: []*result.Item{
+				{
+					ID:             itemID,
+					Type:           result.ItemTypeSecureNote,
+					Name:           originalEncryptedName,
+					OrganizationID: orgID,
+					SecureNote:     &result.ItemSecureNote{},
+				},
+			},
+		},
+	}
+	session := &result.Session{
+		Auth: &result.AuthData{
+			AccessToken: "access-token",
+			ExpiresAt:   time.Now().Add(time.Hour),
+			TokenType:   "Bearer",
+		},
+		Encryption: &result.EncryptionData{
+			UserKey: userKey,
+			OrganizationKeys: map[uuid.UUID]dto.Key{
+				orgID: orgKey,
+			},
+		},
+	}
+	item := &result.Item{
+		ID:             itemID,
+		Type:           result.ItemTypeSecureNote,
+		Name:           "Updated org item",
+		OrganizationID: orgID,
+		SecureNote:     &result.ItemSecureNote{},
+	}
+
+	if err = vault.UpdateItem(context.Background(), session, item); err != nil {
+		t.Fatalf("UpdateItem() returned error: %v", err)
+	}
+	if item.Name != "Updated org item" {
+		t.Fatalf("item.Name = %q, want Updated org item", item.Name)
+	}
+	if item.OrganizationID != orgID {
+		t.Fatalf("item.OrganizationID = %s, want %s", item.OrganizationID, orgID)
+	}
+	if vault.vaultData.Items[0].Name == "Updated org item" {
+		t.Fatal("cached item name was not encrypted")
+	}
+	decryptedCachedName, err := crypto.DecryptString(vault.vaultData.Items[0].Name, orgKey)
+	if err != nil {
+		t.Fatalf("DecryptString() returned error: %v", err)
+	}
+	if decryptedCachedName != "Updated org item" {
+		t.Fatalf("decrypted cached item name = %q, want Updated org item", decryptedCachedName)
+	}
+}
