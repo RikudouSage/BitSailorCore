@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/go-querystring/query"
+	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
@@ -29,6 +30,28 @@ func (receiver *auth) preLogin(ctx context.Context, email string) (*preLoginResp
 	}
 
 	return resp, nil
+}
+
+func (receiver *auth) sendTFAEmail(ctx context.Context, email, passwordHash string, deviceIdentifier uuid.UUID) error {
+	body := &emailTFARequest{
+		Email:              email,
+		MasterPasswordHash: passwordHash,
+		DeviceIdentifier:   deviceIdentifier,
+	}
+
+	_, err := receiver.request[any](
+		ctx,
+		http.MethodPost,
+		urlWithPath(receiver.apiURL, "/two-factor/send-email-login"),
+		body,
+		nil,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed issuing an email tfa request: %w", err)
+	}
+
+	return nil
 }
 
 func (receiver *auth) LoginPassword(ctx context.Context, email, password string, twoFaCode *string) (*result.Session, error) {

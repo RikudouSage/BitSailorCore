@@ -48,3 +48,9 @@ type authRequestUpdateRequest struct {
 	DeviceIdentifier   uuid.UUID `json:"deviceIdentifier"`
 	RequestApproved    bool      `json:"requestApproved"`
 }
+
+type emailTFARequest struct {
+	Email              string    `json:"email"`
+	MasterPasswordHash string    `json:"masterPasswordHash"`
+	DeviceIdentifier   uuid.UUID `json:"deviceIdentifier"`
+}
