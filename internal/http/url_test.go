@@ -1,4 +1,4 @@
-package bitwarden
+package http
 
 import (
 	"net/url"
@@ -13,7 +13,7 @@ func TestURLWithPathPreservesBasePath(t *testing.T) {
 		t.Fatalf("url.Parse() returned error: %v", err)
 	}
 
-	actual := urlWithPath(baseURL, "/identity/connect/token")
+	actual := UrlWithPath(baseURL, "/identity/connect/token")
 	expected := "https://example.com/bitwarden/identity/connect/token"
 	if actual.String() != expected {
 		t.Fatalf("urlWithPath() = %s, want %s", actual.String(), expected)
@@ -31,7 +31,7 @@ func TestURLWithPathHandlesTrailingAndLeadingSlashes(t *testing.T) {
 		t.Fatalf("url.Parse() returned error: %v", err)
 	}
 
-	actual := urlWithPath(baseURL, "ciphers")
+	actual := UrlWithPath(baseURL, "ciphers")
 	expected := "https://example.com/bitwarden/ciphers"
 	if actual.String() != expected {
 		t.Fatalf("urlWithPath() = %s, want %s", actual.String(), expected)
@@ -46,7 +46,7 @@ func TestURLWithPathWithoutBasePath(t *testing.T) {
 		t.Fatalf("url.Parse() returned error: %v", err)
 	}
 
-	actual := urlWithPath(baseURL, "/api/sync")
+	actual := UrlWithPath(baseURL, "/api/sync")
 	expected := "https://example.com/api/sync"
 	if actual.String() != expected {
 		t.Fatalf("urlWithPath() = %s, want %s", actual.String(), expected)

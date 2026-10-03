@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/samber/lo"
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
@@ -15,7 +16,7 @@ func (receiver *vault) DeleteSend(ctx context.Context, session *result.Session, 
 		return ErrMissingVault
 	}
 
-	targetUri := urlWithPath(receiver.apiURL, fmt.Sprintf("/sends/%s", sendID))
+	targetUri := internalHttp.UrlWithPath(receiver.apiURL, fmt.Sprintf("/sends/%s", sendID))
 
 	if err := receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err

@@ -64,6 +64,7 @@ func (receiver *client) Auth() Auth {
 			receiver.debugLogs,
 			tfa.Providers{
 				tfa.NewAuthenticatorProvider(),
+				tfa.NewEmailProvider(receiver.httpClient, receiver.apiURL, receiver.deviceID, receiver.debugLogs),
 			},
 		)
 	}

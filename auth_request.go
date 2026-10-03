@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
@@ -14,7 +15,7 @@ func (receiver *auth) FetchAuthRequest(ctx context.Context, session *result.Sess
 	req, err := receiver.request[*result.AuthRequest](
 		ctx,
 		http.MethodGet,
-		urlWithPath(receiver.apiURL, fmt.Sprintf("/auth-requests/%s", id)),
+		internalHttp.UrlWithPath(receiver.apiURL, fmt.Sprintf("/auth-requests/%s", id)),
 		nil,
 		session,
 	)
@@ -46,7 +47,7 @@ func (receiver *auth) RespondToAuthRequest(ctx context.Context, session *result.
 	resp, err := receiver.request[*result.AuthRequest](
 		ctx,
 		http.MethodPut,
-		urlWithPath(receiver.apiURL, fmt.Sprintf("/auth-requests/%s", authRequest.ID)),
+		internalHttp.UrlWithPath(receiver.apiURL, fmt.Sprintf("/auth-requests/%s", authRequest.ID)),
 		update,
 		session,
 	)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
@@ -18,7 +19,7 @@ func (receiver *vault) Sync(ctx context.Context, session *result.Session) (Vault
 		return nil, err
 	}
 
-	uri := urlWithPath(receiver.apiURL, "/sync")
+	uri := internalHttp.UrlWithPath(receiver.apiURL, "/sync")
 
 	vaultData, err := receiver.request[*result.VaultData](
 		ctx,

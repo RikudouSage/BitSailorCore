@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/samber/lo"
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
 )
 
 type urlConfig struct {
@@ -44,9 +45,9 @@ func normalizeBaseURL(baseURL *url.URL) *urlConfig {
 	return &urlConfig{
 		baseURL:          baseURL,
 		identityURL:      baseURL,
-		apiURL:           urlWithPath(baseURL, "/api"),
-		notificationsURL: urlWithPath(baseURL, "/notifications"),
-		iconsURL:         urlWithPath(baseURL, "/icons"),
+		apiURL:           internalHttp.UrlWithPath(baseURL, "/api"),
+		notificationsURL: internalHttp.UrlWithPath(baseURL, "/notifications"),
+		iconsURL:         internalHttp.UrlWithPath(baseURL, "/icons"),
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/dto"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/helper"
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
@@ -34,7 +35,7 @@ func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, 
 		return fmt.Errorf("failed encrypting struct: %w", err)
 	}
 
-	targetUri := urlWithPath(receiver.apiURL, "/ciphers")
+	targetUri := internalHttp.UrlWithPath(receiver.apiURL, "/ciphers")
 
 	if err = receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err

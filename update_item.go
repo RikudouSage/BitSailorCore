@@ -7,6 +7,7 @@ import (
 
 	clone "github.com/huandu/go-clone/generic"
 	"github.com/samber/lo"
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
@@ -25,7 +26,7 @@ func (receiver *vault) UpdateItem(ctx context.Context, session *result.Session, 
 		return fmt.Errorf("failed encrypting struct: %w", err)
 	}
 
-	targetUri := urlWithPath(receiver.apiURL, fmt.Sprintf("/ciphers/%s", item.ID))
+	targetUri := internalHttp.UrlWithPath(receiver.apiURL, fmt.Sprintf("/ciphers/%s", item.ID))
 	if err = receiver.auth.refreshIfNeeded(ctx, session); err != nil {
 		return err
 	}
