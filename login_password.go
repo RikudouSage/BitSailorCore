@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/google/go-querystring/query"
 	"github.com/samber/lo"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/dto"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/crypto"
 	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
@@ -31,7 +33,7 @@ func (receiver *auth) preLogin(ctx context.Context, email string) (*preLoginResp
 	return resp, nil
 }
 
-func (receiver *auth) LoginPassword(ctx context.Context, email, password string, twoFaCode *string) (*result.Session, error) {
+func (receiver *auth) LoginPassword(ctx context.Context, email, password string, tfa *dto.TFAConfig) (*result.Session, error) {
 	preLogin, err := receiver.preLogin(ctx, email)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prelogin: %w", err)
@@ -57,10 +59,18 @@ func (receiver *auth) LoginPassword(ctx context.Context, email, password string,
 		DeviceIdentifier: receiver.deviceID.String(),
 		DeviceName:       internal.DeviceName,
 	}
-	if twoFaCode != nil {
-		requestData.TwoFactorToken = twoFaCode
-		requestData.TwoFactorProvider = new(0)
-		requestData.TwoFactorRemember = new(0)
+
+	if tfa != nil {
+		provider, err := receiver.providers.FindByKind(tfa.Kind)
+		if err != nil {
+			return nil, fmt.Errorf("failed to find provider: %w", err)
+		}
+
+		if err = provider.ModifyRequest(requestData); err != nil {
+			return nil, fmt.Errorf("failed to modify request using totp provider: %w", err)
+		}
+
+		requestData.TwoFactorToken = new(tfa.Code)
 	}
 
 	req, err := http.NewRequestWithContext(
@@ -89,11 +99,36 @@ func (receiver *auth) LoginPassword(ctx context.Context, email, password string,
 	var twoFaResp twoFactorErrorResponse
 	_ = json.Unmarshal(body, &twoFaResp)
 	if len(twoFaResp.TwoFactorProviders2) > 0 {
-		if _, ok := twoFaResp.TwoFactorProviders2["0"]; ok {
-			return nil, ErrTwoFactorRequired
+		appSupportedKinds := receiver.providers.GetSupportedKinds()
+		accountSupportedKinds, err := lo.MapErr(lo.Keys(twoFaResp.TwoFactorProviders2), func(item string, _ int) (dto.TFAKind, error) {
+			parsed, err := strconv.Atoi(item)
+			if err != nil {
+				return 0, fmt.Errorf("failed parsing '%s' as a provider type: %w", item, err)
+			}
+
+			return dto.TFAKind(parsed), nil
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse two-factor authentication provider kinds: %w", err)
 		}
 
-		return nil, ErrUnsupportedTwoFactorRequired
+		intersection := lo.Intersect(appSupportedKinds, accountSupportedKinds)
+		if len(intersection) == 0 {
+			return nil, fmt.Errorf(
+				"%w: supported methods: %s",
+				ErrUnsupportedTwoFactorRequired,
+				strings.Join(receiver.providers.GetSupportedNames(), ", "),
+			)
+		}
+
+		supportedKindsStrs := lo.Map(intersection, func(item dto.TFAKind, _ int) string {
+			return strconv.Itoa(int(item))
+		})
+		return nil, fmt.Errorf(
+			"%w: supported kinds: %s",
+			ErrTwoFactorRequired,
+			strings.Join(supportedKindsStrs, ", "),
+		)
 	}
 
 	if resp.StatusCode != http.StatusOK {

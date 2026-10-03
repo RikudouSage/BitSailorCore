@@ -2,15 +2,16 @@ package main
 
 /*
 #include "bw_common.h"
+#include "bw_auth.h"
 */
 import "C"
-import "strings"
 
 //export BitwardenLoginPassword
 func BitwardenLoginPassword(
 	client C.ClientHandle,
 	ctx C.ContextHandle,
-	email, password, twoFaCode *C.char,
+	email, password *C.char,
+	tfa *C.BitwardenTfaConfig,
 	outHandle *C.SessionHandle,
 ) C.BitwardenResult {
 	if outHandle == nil {
@@ -26,12 +27,9 @@ func BitwardenLoginPassword(
 
 	emailStr := C.GoString(email)
 	passwordStr := C.GoString(password)
-	twoFaCodeStr := goStringFromCPtr(twoFaCode)
-	if twoFaCodeStr != nil && strings.TrimSpace(*twoFaCodeStr) == "" {
-		twoFaCodeStr = nil
-	}
+	twoFa := goTFAConfigFromC(tfa)
 
-	session, err := clientGo.Auth().LoginPassword(ctxGo, emailStr, passwordStr, twoFaCodeStr)
+	session, err := clientGo.Auth().LoginPassword(ctxGo, emailStr, passwordStr, twoFa)
 	if err != nil {
 		setLastError(err)
 		return BitwardenError

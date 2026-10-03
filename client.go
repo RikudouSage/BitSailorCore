@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/tfa"
 )
 
 var ErrLockedSession = errors.New("this operation cannot be done on locked session")
@@ -61,6 +62,9 @@ func (receiver *client) Auth() Auth {
 			receiver.httpClient,
 			receiver.deviceID,
 			receiver.debugLogs,
+			tfa.Providers{
+				tfa.NewAuthenticatorProvider(),
+			},
 		)
 	}
 

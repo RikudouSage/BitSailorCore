@@ -1,6 +1,9 @@
 package bitwarden
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/dto"
+)
 
 type preLoginRequest struct {
 	Email string `json:"email"`
@@ -23,6 +26,28 @@ type passwordLoginRequest struct {
 	TwoFactorToken          *string `url:"twoFactorToken,omitempty"`
 	TwoFactorRemember       *int    `url:"twoFactorRemember,omitempty"`
 	SsoEmail2faSessionToken *string `url:"ssoEmail2faSessionToken,omitempty"`
+}
+
+func (receiver *passwordLoginRequest) SetProvider(kind *dto.TFAKind) {
+	if kind == nil {
+		receiver.TwoFactorProvider = nil
+		return
+	}
+
+	receiver.TwoFactorProvider = new(int(*kind))
+}
+
+func (receiver *passwordLoginRequest) SetRemember(remember *bool) {
+	if remember == nil {
+		receiver.TwoFactorRemember = nil
+		return
+	}
+
+	if *remember {
+		receiver.TwoFactorRemember = new(1)
+	} else {
+		receiver.TwoFactorRemember = new(0)
+	}
 }
 
 type apiKeyLoginRequest struct {
