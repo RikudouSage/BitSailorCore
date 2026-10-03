@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/dto"
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/internal/tfa"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
@@ -56,5 +57,5 @@ func newAuth(
 }
 
 func (receiver *auth) getTokenURL() *url.URL {
-	return urlWithPath(receiver.identityURL, "/identity/connect/token")
+	return internalHttp.UrlWithPath(receiver.identityURL, "/identity/connect/token")
 }

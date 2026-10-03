@@ -16,6 +16,7 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/google/uuid"
 	"github.com/philippseith/signalr"
+	internalHttp "go.chrastecky.dev/bitsailor-core/bitwarden/internal/http"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
@@ -382,7 +383,7 @@ func (receiver *notifications) run(
 		ready <- err
 	}
 
-	hubURL := urlWithPath(receiver.notificationsURL, "/hub")
+	hubURL := internalHttp.UrlWithPath(receiver.notificationsURL, "/hub")
 	if hubURL.Scheme == "https" {
 		hubURL.Scheme = "wss"
 	} else {
