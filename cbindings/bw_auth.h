@@ -1,6 +1,11 @@
 #pragma once
 
+typedef enum {
+    BitwardenTfaKindAuthenticator = 0,
+    BitwardenTfaKindEmail = 1,
+} BitwardenTfaKind;
+
 typedef struct {
-    int kind;
+    BitwardenTfaKind kind;
     char *code;
 } BitwardenTfaConfig;
