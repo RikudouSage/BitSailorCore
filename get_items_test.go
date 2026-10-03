@@ -60,7 +60,7 @@ func TestGetItemsSortsItemsByName(t *testing.T) {
 
 	userKey := dto.Key("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	malformedID := uuid.MustParse("44444444-4444-4444-4444-444444444444")
-	names := []string{"Charlie item", "Alpha item", "Bravo item"}
+	names := []string{"Charlie item", "Alpha item", "Bravo item", "case insensitive item"}
 	encryptedNames := make([]string, 0, len(names))
 	for _, name := range names {
 		encryptedName, err := crypto.EncryptString(name, userKey)
@@ -77,6 +77,7 @@ func TestGetItemsSortsItemsByName(t *testing.T) {
 				{ID: uuid.MustParse("11111111-1111-1111-1111-111111111111"), Type: result.ItemTypeSecureNote, Name: encryptedNames[1], SecureNote: &result.ItemSecureNote{}},
 				{ID: malformedID, Type: result.ItemTypeSecureNote, Name: "not encrypted", SecureNote: &result.ItemSecureNote{}},
 				{ID: uuid.MustParse("22222222-2222-2222-2222-222222222222"), Type: result.ItemTypeSecureNote, Name: encryptedNames[2], SecureNote: &result.ItemSecureNote{}},
+				{ID: uuid.MustParse("44444444-4444-4444-4444-444444444444"), Type: result.ItemTypeSecureNote, Name: encryptedNames[3], SecureNote: &result.ItemSecureNote{}},
 			},
 		},
 	}
@@ -91,7 +92,7 @@ func TestGetItemsSortsItemsByName(t *testing.T) {
 		t.Fatalf("GetItems() returned error: %v", err)
 	}
 
-	wantNames := []string{"", "Alpha item", "Bravo item", "Charlie item"}
+	wantNames := []string{"", "Alpha item", "Bravo item", "case insensitive item", "Charlie item"}
 	if len(items) != len(wantNames) {
 		t.Fatalf("len(items) = %d, want %d", len(items), len(wantNames))
 	}
