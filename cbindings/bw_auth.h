@@ -7,5 +7,5 @@ typedef enum {
 
 typedef struct {
     BitwardenTfaKind kind;
-    char *code;
+    const char *code;
 } BitwardenTfaConfig;
