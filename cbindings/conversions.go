@@ -3,6 +3,7 @@ package main
 /*
 #include "bw_common.h"
 #include "bw_item.h"
+#include "bw_auth.h"
 #include <stdlib.h>
 #include <stdbool.h>
 */
@@ -12,6 +13,7 @@ import (
 	"unsafe"
 
 	"github.com/google/uuid"
+	"go.chrastecky.dev/bitsailor-core/bitwarden/dto"
 	"go.chrastecky.dev/bitsailor-core/bitwarden/result"
 )
 
@@ -30,6 +32,17 @@ func parseUUIDIntoC(source uuid.UUID) C.UUID {
 		out.bytes[i] = C.uint8_t(source[i])
 	}
 	return out
+}
+
+func goTFAConfigFromC(value *C.BitwardenTfaConfig) *dto.TFAConfig {
+	if value == nil {
+		return nil
+	}
+
+	return &dto.TFAConfig{
+		Kind: dto.TFAKind(value.kind),
+		Code: goStringValueFromCPtr(value.code),
+	}
 }
 
 func cItemPermissionsFromPtr(value *result.ItemPermissions) *C.BitwardenItemPermissions {
