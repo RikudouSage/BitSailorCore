@@ -50,7 +50,7 @@ func (receiver *vault) GetItems(ctx context.Context, session *result.Session) ([
 
 	results := resultSlice.ToSlice()
 	slices.SortStableFunc(results, func(a, b *result.Item) int {
-		return strings.Compare(a.Name, b.Name)
+		return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
 	})
 
 	return results, nil
