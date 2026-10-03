@@ -125,7 +125,7 @@ func (receiver *auth) LoginPassword(ctx context.Context, email, password string,
 			return strconv.Itoa(int(item))
 		})
 		return nil, fmt.Errorf(
-			"%w: supported kinds: %s",
+			"%w: supported kinds: %s|",
 			ErrTwoFactorRequired,
 			strings.Join(supportedKindsStrs, ", "),
 		)
