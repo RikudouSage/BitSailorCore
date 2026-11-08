@@ -20,6 +20,7 @@ func TestUpdateItemUpdatesRemoteItemAndReplacesVaultData(t *testing.T) {
 
 	itemID := uuid.MustParse("11111111-1111-1111-1111-111111111111")
 	keepID := uuid.MustParse("22222222-2222-2222-2222-222222222222")
+	profileID := uuid.MustParse("33333333-3333-3333-3333-333333333333")
 	userKey := dto.Key([]byte("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"))
 	originalEncryptedName, err := crypto.EncryptString("Original item", userKey)
 	if err != nil {
@@ -47,6 +48,9 @@ func TestUpdateItemUpdatesRemoteItemAndReplacesVaultData(t *testing.T) {
 		}
 		if requestItem.ID != itemID {
 			t.Fatalf("request item ID = %s, want %s", requestItem.ID, itemID)
+		}
+		if requestItem.EncryptedFor != profileID {
+			t.Fatalf("request item encryptedFor = %s, want %s", requestItem.EncryptedFor, profileID)
 		}
 		if requestItem.Name == "Updated item" {
 			t.Fatal("request item name was not encrypted")
@@ -82,6 +86,7 @@ func TestUpdateItemUpdatesRemoteItemAndReplacesVaultData(t *testing.T) {
 		httpClient: server.Client(),
 		auth:       &auth{now: time.Now},
 		vaultData: &result.VaultData{
+			Profile: &result.Profile{ID: profileID},
 			Items: []*result.Item{
 				{ID: keepID},
 				{ID: itemID, Type: result.ItemTypeSecureNote, Name: originalEncryptedName, SecureNote: &result.ItemSecureNote{}},
@@ -137,6 +142,7 @@ func TestUpdateItemPreservesEncryptedItemKeyAndUsesDecryptedItemKey(t *testing.T
 	t.Parallel()
 
 	itemID := uuid.MustParse("11111111-1111-1111-1111-111111111111")
+	profileID := uuid.MustParse("33333333-3333-3333-3333-333333333333")
 	userKey := dto.Key([]byte("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"))
 	itemKey := dto.Key([]byte("abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"))
 	encryptedItemKey, err := crypto.EncryptBytes(itemKey, userKey)
@@ -191,6 +197,7 @@ func TestUpdateItemPreservesEncryptedItemKeyAndUsesDecryptedItemKey(t *testing.T
 		httpClient: server.Client(),
 		auth:       &auth{now: time.Now},
 		vaultData: &result.VaultData{
+			Profile: &result.Profile{ID: profileID},
 			Items: []*result.Item{
 				{ID: itemID, Type: result.ItemTypeSecureNote, Name: updatedEncryptedName, Key: &encryptedItemKey, SecureNote: &result.ItemSecureNote{}},
 			},
@@ -230,6 +237,7 @@ func TestUpdateItemWithOrganizationIDUsesOrganizationKey(t *testing.T) {
 
 	itemID := uuid.MustParse("11111111-1111-1111-1111-111111111111")
 	orgID := uuid.MustParse("22222222-2222-2222-2222-222222222222")
+	profileID := uuid.MustParse("33333333-3333-3333-3333-333333333333")
 	userKey := dto.Key([]byte("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"))
 	orgKey := dto.Key([]byte("abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"))
 	originalEncryptedName, err := crypto.EncryptString("Original org item", orgKey)
@@ -291,6 +299,7 @@ func TestUpdateItemWithOrganizationIDUsesOrganizationKey(t *testing.T) {
 		httpClient: server.Client(),
 		auth:       &auth{now: time.Now},
 		vaultData: &result.VaultData{
+			Profile: &result.Profile{ID: profileID},
 			Items: []*result.Item{
 				{
 					ID:             itemID,

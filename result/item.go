@@ -118,6 +118,7 @@ func (receiver Field) CheckboxValue() bool {
 
 type Item struct {
 	ID                  uuid.UUID        `json:"id,omitzero"`
+	EncryptedFor        uuid.UUID        `json:"encryptedFor,omitzero"`
 	Type                ItemType         `json:"type"`
 	Notes               *string          `json:"notes,omitempty"`
 	OrganizationUseTOTP *bool            `json:"organizationUseTotp,omitempty"`
