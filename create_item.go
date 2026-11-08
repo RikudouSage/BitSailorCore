@@ -26,6 +26,9 @@ func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, 
 	}
 
 	resultItem := clone.Clone(item)
+	if err := receiver.setEncryptedFor(resultItem); err != nil {
+		return err
+	}
 	key, err := receiver.getItemDecryptionKey(session, resultItem)
 	if err != nil {
 		return fmt.Errorf("failed fetching encryption key: %w", err)
@@ -52,6 +55,15 @@ func (receiver *vault) CreateItem(ctx context.Context, session *result.Session, 
 	*item = *newItemDec
 	receiver.vaultData.Items = append(receiver.vaultData.Items, newItemEnc)
 
+	return nil
+}
+
+func (receiver *vault) setEncryptedFor(item *result.Item) error {
+	if receiver.vaultData.Profile == nil || receiver.vaultData.Profile.ID == uuid.Nil {
+		return errors.New("vault profile is missing a user ID")
+	}
+
+	item.EncryptedFor = receiver.vaultData.Profile.ID
 	return nil
 }
 

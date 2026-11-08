@@ -17,6 +17,9 @@ func (receiver *vault) UpdateItem(ctx context.Context, session *result.Session, 
 	}
 
 	resultItem := clone.Clone(item)
+	if err := receiver.setEncryptedFor(resultItem); err != nil {
+		return err
+	}
 	key, err := receiver.getItemDecryptionKey(session, resultItem)
 	if err != nil {
 		return fmt.Errorf("failed fetching encryption key: %w", err)
